@@ -6,7 +6,7 @@
 
 # load libraries ####
 # use 00_install_R_packages.R for installing missing packages
-lapply(c("shiny"),
+lapply(c("shiny", "shinycssloaders"),
 			 require, character.only = TRUE)
 
 shinyUI(
@@ -49,14 +49,15 @@ shinyUI(
 		column(5,
 			h3(textOutput("caption")),
 			
-			plotOutput(
+			withSpinner(plotOutput(
 				"plotYear",
-				click = "plot1_click",
-				brush = brushOpts(id = "plot1_brush")
+				#click = "plot1_click",
+				#brush = brushOpts(id = "plot1_brush")
+				)
 			)
 		),
 		column(5,
-					 plotOutput("plotDay")
+					 withSpinner(plotOutput("plotDay"))
 		)
 		#),
 	),
