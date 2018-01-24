@@ -1,0 +1,29 @@
+.irs-line-left {
+    border-top: 1px solid #CCC;
+    border-bottom: 1px solid #CCC;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+    
+}
+
+.irs-bar {
+    border-top: 1px solid #CCC;
+    border-bottom: 1px solid #CCC;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%);
+    
+}
+
+.irs-bar-edge {
+    border: 1px solid #CCC;
+    background: linear-gradient(to bottom, #DDD -50%, #FFF 150%)#DDD;
+}
+.irs-slider.single {
+    background: #428bca;
+}
+.btn-default {
+    color: white;
+    background-color: #428bca;
+}
+.btn-default:focus {
+    color: white;
+    background-color: #428bca;
+}
