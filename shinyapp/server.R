@@ -9,16 +9,32 @@
 lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2"), 
        require, character.only = TRUE)
 
+source("global.R")
+
 # to see stdout logs, too
 sink(stderr(), type = "output")
 
 # Define server logic required to plot
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
 	
   # Return the formula text for printing as a caption
   output$caption <- renderText({
-    paste("Alpha-Version, Daten nicht verlässlich!", input$scale)
+    paste0(names(locationChoices[locationChoices == input$location]), ": Anzahl ", names(vehicleChoices[vehicleChoices == input$vehicle]), " (nicht angezeigte Daten fehlen noch)")
+    			# input$location, ": Anzahl ", input$vehicle)
   })
+  
+  # implement "check all ..." buttons
+  observe({
+  	if (input$checkAllYears > 0) {
+  		updateCheckboxGroupInput(session = session, inputId = "years", selected = list("2013", "2014", "2015", "2016", "2017"))
+  	}
+  	if(input$checkAllMonths > 0) {
+  		updateCheckboxGroupInput(session = session, inputId = "months", selected = list("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"))
+  	}
+  	if(input$checkAllWeekdays > 0) {
+  		updateCheckboxGroupInput(session = session, inputId = "weekdays", selected = list("0", "1", "2", "3", "4", "5", "6"))
+  		}
+  	})
 
   load_filtered_data_from_db <- reactive({
   	start <- Sys.time()
@@ -32,12 +48,29 @@ shinyServer(function(input, output) {
   		# default to cars only 
   		# (for selecting both, a second SQL query is added below)
   		sql_table = "cars"
-  		if (input$location == "'Wolbecker.Straße'") {
-				sql_location = "'%09040%'"
-  		} else if (input$location == "'Neutor'") {
-  			sql_location = "'%01080%'"
-  		}
+  		sql_location <- 
+  			switch(input$location, 
+  						 "'Neutor'" = "'%01080%'", 
+  						 "'Wolbecker.Straße'" = "'%04050%'",
+  						 "'Hüfferstraße'" = "'%03052%'",
+  						 "'Hammer.Straße'" = "'%07030%'",
+  						 "'Promenade'" = "'%04051%'",
+  						 "'Gartenstraße'" = "'%04073%'",
+  						 "'Warendorfer.Straße'" = "'%04061%'",
+  						 "'Hafenstraße'" = "'%04010%'",
+  						 "'Weseler.Straße'" = "'%01190%'",
+  						 # Roxel
+  						 "'roxel1'" = "'%24020%'", 
+  						 "'roxel2'" = "'%24100%'", 
+  						 "'roxel3'" = "'%24140%'", 
+  						 "'roxel4'" = "'%24010%'", 
+  						 "'roxel5'" = "'%24120%'", 
+  						 "'roxel6'" = "'%24130%'", 
+  						 "'roxel7'" = "'%24030%'"
+  						 )
   	}
+  	
+  	print(sql_location)
   	
   	date_filter <- 
 			paste0(" WHERE hour >= ", input$hour_range[1],
