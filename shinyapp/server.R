@@ -7,7 +7,7 @@
 
 # load libraries ####
 # use 00_install_R_packages.R for installing missing packages
-lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2"), 
+lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2", "lubridate"), 
        require, character.only = TRUE)
 
 source("global.R")
@@ -86,8 +86,39 @@ shinyServer(function(input, output, session) {
     						 )
   	  }
   	
-    	print(sql_location)
-    	
+    	# only show filtering option relevant for the current data
+			dates_in_car_data <- data.frame(date = c("2015-01-01"))
+			dates_in_bike_data <- data.frame(date = c("2015-01-01"))
+			
+			if (input$vehicle == "bikes" | input$vehicle == "both") {
+				dates_in_bike_data <- dbGetQuery(conn = con, paste0("SELECT DISTINCT date AS date FROM bikes WHERE location LIKE ", sql_location, " AND count != ''"))
+			} else if (input$vehicle == "cars" | input$vehicle == "both") {
+				dates_in_car_data <- dbGetQuery(conn = con, paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ", sql_location, " AND count != ''"))
+			}
+			
+			years_in_data <- sort(unique(c(year(dates_in_bike_data$date), 
+															year(dates_in_car_data$date))))
+			months_in_data <- sort(unique(c(month(dates_in_bike_data$date), 
+															 month(dates_in_car_data$date))))
+			wdays_in_data <- sort(unique(c(wday(dates_in_bike_data$date),
+															(wday(dates_in_car_data$date)))))
+			# not yet fully functional
+			# TODO
+			# - use proper labels via global.R
+			# - test
+			# updateCheckboxGroupInput(session = session,
+			#                    inputId = "years",
+			# 									 selected = input$years,
+			#                    choices = years_in_data)
+			# updateCheckboxGroupInput(session = session,
+			#                    inputId = "months",
+			# 									 selected = input$months,
+			#                    choices = months_in_data)
+			# updateCheckboxGroupInput(session = session,
+			#                    inputId = "weekdays",
+			# 									 selected = input$weekdays,
+			#                    choices = wdays_in_data)
+		
     	date_filter <- 
   			paste0(" WHERE hour >= ", input$hour_range[1],
   						" AND hour <= ", input$hour_range[2])
@@ -155,12 +186,12 @@ shinyServer(function(input, output, session) {
 		print(sql_string)
 		
 		vehicles <- dbGetQuery(conn = con, sql_string)
+		
 		dbDisconnect(con)
 		
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
-		
 		return(vehicles)
 	})  # reactive
 
