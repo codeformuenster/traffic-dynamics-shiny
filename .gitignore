@@ -1,3 +1,6 @@
+# data folder for local use (should not be in repo as it comes from the other Docker image)
+shinyapp/data
+
 # History files
 .Rhistory
 .Rapp.history
