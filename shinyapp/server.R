@@ -7,7 +7,7 @@
 
 # load libraries ####
 # use 00_install_R_packages.R for installing missing packages
-lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2", "lubridate"), 
+lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2", "lubridate", "plotly"), 
        require, character.only = TRUE)
 
 source("global.R")
@@ -27,98 +27,122 @@ shinyServer(function(input, output, session) {
              " (nicht angezeigte Daten fehlen noch)")
       			 # input$location, ": Anzahl ", input$vehicle)
     })
-  
-  # implement "check all ..." buttons
-  observe({
-  	if (input$checkAllYears > 0) {
-  		updateCheckboxGroupInput(session = session,
-  		                         inputId = "years",
-  		                         selected = list("2013", "2014", "2015", "2016",
-  		                                         "2017"))
-  	}
-  	if (input$checkAllMonths > 0) {
-  		updateCheckboxGroupInput(session = session,
-  		                         inputId = "months",
-  		                         selected = list("01", "02", "03", "04", "05",
-  		                                         "06", "07", "08", "09", "10",
-  		                                         "11", "12"))
-  	}
-  	if (input$checkAllWeekdays > 0) {
-  		updateCheckboxGroupInput(session = session,
-  		                         inputId = "weekdays",
-  		                         selected = list("0", "1", "2", "3", "4", "5",
-  		                                         "6"))
-  		}
-  	})
 
+    observe({
+  		# only show filtering option relevant for the current data
+			
+    	# TODO move the following switch to global.R to have the code only once
+  		sql_location_cars <- 
+  				switch(input$location, 
+  						 "'Neutor'" = "'%01080%'", 
+  						 "'Wolbecker.Straße'" = "'%04050%'",
+  						 "'Hüfferstraße'" = "'%03052%'",
+  						 "'Hammer.Straße'" = "'%07030%'",
+  						 "'Promenade'" = "'%04051%'",
+  						 "'Gartenstraße'" = "'%04073%'",
+  						 "'Warendorfer.Straße'" = "'%04061%'",
+  						 "'Hafenstraße'" = "'%04010%'",
+  						 "'Weseler.Straße'" = "'%01190%'",
+  						 # Roxel
+  						 "'roxel1'" = "'%24020%'", 
+  						 "'roxel2'" = "'%24100%'", 
+  						 "'roxel3'" = "'%24140%'", 
+  						 "'roxel4'" = "'%24010%'", 
+  						 "'roxel5'" = "'%24120%'", 
+  						 "'roxel6'" = "'%24130%'", 
+  						 "'roxel7'" = "'%24030%'"
+  						 )
+  	
+  			dates_in_car_data <- data.frame(date = NA_character_)
+				dates_in_bike_data <- data.frame(date = NA_character_)
+				
+				con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
+    				
+				if (input$vehicle == "bikes" | input$vehicle == "both") {
+					dates_in_bike_data <-
+						dbGetQuery(conn = con, 
+											 paste0("SELECT DISTINCT date AS date FROM bikes WHERE location LIKE ", 
+											 			 input$location, " AND count != ''"))
+				}
+				if (input$vehicle == "cars" | input$vehicle == "both") {
+					dates_in_car_data <-
+						dbGetQuery(conn = con, 
+											 paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ", 
+											 			 sql_location_cars, " AND count != ''"))
+				}
+				
+				dbDisconnect(con)
+				
+				years_in_data <- 
+					sort(unique(c(as.character(year(dates_in_bike_data$date)), 
+												as.character(year(dates_in_car_data$date)))))
+				months_in_data <-
+					sort(unique(c(as.numeric(month(dates_in_bike_data$date)), 
+												as.numeric(month(dates_in_car_data$date)))))
+				
+				# wday() - 1  to get Sunday == 0 and Monday == 1
+				wdays_in_data <-
+					sort(unique(c(as.numeric(wday(dates_in_bike_data$date) - 1),
+												as.numeric(wday(dates_in_car_data$date) - 1))))
+				
+				updateCheckboxGroupInput(session = session,
+				                   inputId = "years",
+													 inline = TRUE,
+													 selected = isolate(input$years),
+				                   choices = years_in_data)
+				
+				updateCheckboxGroupInput(session = session,
+				                   inputId = "months",
+													 inline = TRUE,
+					 		             selected = isolate(input$months),
+				                   choices = monthChoices[monthChoices %in% months_in_data])
+				
+				updateCheckboxGroupInput(session = session,
+				                   inputId = "weekdays",
+													 inline = TRUE,
+					 		             selected = isolate(input$weekdays),
+				                   choices = weekdayChoices[weekdayChoices %in% wdays_in_data])
+				
+				updateDateRangeInput(session = session,
+  				 		inputId = "date_range",
+  				 		min = min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
+  				 		max = max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
+  				 		start = min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
+  				 		end = max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE)
+  				 	)
+	})
+	
   load_filtered_data_from_db <-
     reactive({
     	start <- Sys.time()
     	
     	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
     	
-    	if (input$vehicle == "bikes") {
-    		sql_table = "bikes"
-    		sql_location = input$location
-    	} else  {
-    		# default to cars only 
-    		# (for selecting both, a second SQL query is added below)
-    		sql_table = "cars"
-    		sql_location <- 
-    			switch(input$location, 
-    						 "'Neutor'" = "'%01080%'", 
-    						 "'Wolbecker.Straße'" = "'%04050%'",
-    						 "'Hüfferstraße'" = "'%03052%'",
-    						 "'Hammer.Straße'" = "'%07030%'",
-    						 "'Promenade'" = "'%04051%'",
-    						 "'Gartenstraße'" = "'%04073%'",
-    						 "'Warendorfer.Straße'" = "'%04061%'",
-    						 "'Hafenstraße'" = "'%04010%'",
-    						 "'Weseler.Straße'" = "'%01190%'",
-    						 # Roxel
-    						 "'roxel1'" = "'%24020%'", 
-    						 "'roxel2'" = "'%24100%'", 
-    						 "'roxel3'" = "'%24140%'", 
-    						 "'roxel4'" = "'%24010%'", 
-    						 "'roxel5'" = "'%24120%'", 
-    						 "'roxel6'" = "'%24130%'", 
-    						 "'roxel7'" = "'%24030%'"
-    						 )
-  	  }
-  	
-    	# only show filtering option relevant for the current data
-			dates_in_car_data <- data.frame(date = c("2015-01-01"))
-			dates_in_bike_data <- data.frame(date = c("2015-01-01"))
-			
-			if (input$vehicle == "bikes" | input$vehicle == "both") {
-				dates_in_bike_data <- dbGetQuery(conn = con, paste0("SELECT DISTINCT date AS date FROM bikes WHERE location LIKE ", sql_location, " AND count != ''"))
-			} else if (input$vehicle == "cars" | input$vehicle == "both") {
-				dates_in_car_data <- dbGetQuery(conn = con, paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ", sql_location, " AND count != ''"))
-			}
-			
-			years_in_data <- sort(unique(c(year(dates_in_bike_data$date), 
-															year(dates_in_car_data$date))))
-			months_in_data <- sort(unique(c(month(dates_in_bike_data$date), 
-															 month(dates_in_car_data$date))))
-			wdays_in_data <- sort(unique(c(wday(dates_in_bike_data$date),
-															(wday(dates_in_car_data$date)))))
-			# not yet fully functional
-			# TODO
-			# - use proper labels via global.R
-			# - test
-			# updateCheckboxGroupInput(session = session,
-			#                    inputId = "years",
-			# 									 selected = input$years,
-			#                    choices = years_in_data)
-			# updateCheckboxGroupInput(session = session,
-			#                    inputId = "months",
-			# 									 selected = input$months,
-			#                    choices = months_in_data)
-			# updateCheckboxGroupInput(session = session,
-			#                    inputId = "weekdays",
-			# 									 selected = input$weekdays,
-			#                    choices = wdays_in_data)
-		
+  		sql_table_bikes <- "bikes"
+  		sql_table_cars <- "cars"
+  		
+  		sql_location_bikes <- input$location
+  		sql_location_cars <- 
+  			switch(input$location,
+  						 "'Neutor'" = "'%01080%'", 
+  						 "'Wolbecker.Straße'" = "'%04050%'",
+  						 "'Hüfferstraße'" = "'%03052%'",
+  						 "'Hammer.Straße'" = "'%07030%'",
+  						 "'Promenade'" = "'%04051%'",
+  						 "'Gartenstraße'" = "'%04073%'",
+  						 "'Warendorfer.Straße'" = "'%04061%'",
+  						 "'Hafenstraße'" = "'%04010%'",
+  						 "'Weseler.Straße'" = "'%01190%'",
+  						 # Roxel
+  						 "'roxel1'" = "'%24020%'", 
+  						 "'roxel2'" = "'%24100%'", 
+  						 "'roxel3'" = "'%24140%'", 
+  						 "'roxel4'" = "'%24010%'", 
+  						 "'roxel5'" = "'%24120%'", 
+  						 "'roxel6'" = "'%24130%'", 
+  						 "'roxel7'" = "'%24030%'"
+  						 )
+
     	date_filter <- 
   			paste0(" WHERE hour >= ", input$hour_range[1],
   						" AND hour <= ", input$hour_range[2])
@@ -147,29 +171,40 @@ shinyServer(function(input, output, session) {
     		
     		# months
   			date_filter <- paste0(date_filter, " AND strftime('%m', date) IN (")
-    		for (yidx in 1:length(input$months)) {
-    			if (yidx != length(input$months)) {
-    				date_filter <- paste0(date_filter, "'" , input$months[yidx], "',")
+
+    		for (midx in 1:length(input$months)) {
+    			if (midx != length(input$months)) {
+    				# sprintf prints leading 0 (e.g., 03 instead of 3)
+    				date_filter <- paste0(date_filter, "'" , sprintf("%02d", as.numeric(input$months[midx])), "',")
     			} else {
     				# no comma after last date
-    				date_filter <- paste0(date_filter, "'" , input$months[yidx], "'")
+    				date_filter <- paste0(date_filter, "'" , sprintf("%02d", as.numeric(input$months[midx])), "'")
     			}
     		}
     		date_filter <- paste0(date_filter, ")")
   			
     		# weekday
   			date_filter <- paste0(date_filter, " AND strftime('%w', date) IN (")
-    		for (yidx in 1:length(input$weekdays)) {
-    			if (yidx != length(input$weekdays)) {
-    				date_filter <- paste0(date_filter, "'" , input$weekdays[yidx], "',")
+    		for (wdidx in 1:length(input$weekdays)) {
+    			if (wdidx != length(input$weekdays)) {
+    				date_filter <- paste0(date_filter, "'" , input$weekdays[wdidx], "',")
     			} else {
     				# no comma after last date
-    				date_filter <- paste0(date_filter, "'" , input$weekdays[yidx], "'")
+    				date_filter <- paste0(date_filter, "'" , input$weekdays[wdidx], "'")
     			}
     		}
     		date_filter <- paste0(date_filter, ")")
     	}
   	
+    # default: cars
+    sql_table <- sql_table_cars
+    sql_location <- sql_location_cars
+    
+    if (input$vehicle == "bikes") {
+    	sql_table <- sql_table_bikes
+    	sql_location <- sql_location_bikes
+    }
+    
 		sql_string <- paste0("SELECT date, hour, count, location, vehicle", 
       " FROM ", sql_table, date_filter,
 			" AND location LIKE ", sql_location)
@@ -204,7 +239,7 @@ shinyServer(function(input, output, session) {
  		cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
     return(vehicles_year)
   })
-
+ 	
   aggregated_data_hour <- reactive({
   	start <- Sys.time()
   	vehicles_hour <- 
@@ -216,8 +251,8 @@ shinyServer(function(input, output, session) {
   	           " seconds\n"))
   	return(vehicles_hour)
   })
-    
-  output$plotYear <- renderPlot({
+  
+ 	output$plotYear <- renderPlot({
   	start <- Sys.time()
     p <- ggplot(data = aggregated_data_year()) +
 	    geom_line(aes(x = as.POSIXct(date),

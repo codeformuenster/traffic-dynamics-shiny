@@ -24,8 +24,13 @@ shinyUI(
 			  3,
     		wellPanel(
     		  # see global.R for choices
-    		 	selectInput("vehicle", "Verkehrsmittel:", choices = vehicleChoices),
-    		 	selectInput("location", "Ort:", choices = locationChoices),
+    		 	selectInput("vehicle", 
+    		 							"Verkehrsmittel:", 
+    		 							choices = vehicleChoices,
+    		 							selected = startVehicle),
+    		 	selectInput("location", "Ort:", 
+    		 							choices = locationChoices,
+    		 							selected = startLocation),
     		 	sliderInput(
     		 		"hour_range",
     		 		"Uhrzeit:",
@@ -42,10 +47,10 @@ shinyUI(
           	dateRangeInput(
   				 		"date_range",
   				 		"Wähle eine Zeitspanne:",
-  				 		min = "2015-01-01",
-  				 		max = "2016-12-31",
-  				 		start = "2016-01-01",
-  				 		end = "2016-12-31",
+  				 		min = "2013-06-01",
+  				 		max = "2017-11-08",
+  				 		start = "2013-06-01",
+  				 		end = "2017-11-08",
   				 		format = "dd. M yyyy",
   				 		language = "de", separator = "bis"
   				 	)
@@ -59,31 +64,16 @@ shinyUI(
         	                     selected = 2017,
         	                     choices = list("2013", "2014", "2015", "2016",
         	                                    "2017")),
-        	  actionButton("checkAllYears",
-        	               label = "Alle Jahre auswählen"),
 				 		checkboxGroupInput("months",
 				 		                   "Wähle Monate:",
 				 		                   inline = TRUE,
-				 		                   selected = '08',
-				 		                   choices = c("Januar" = '01', "Februar" = '02',
-				 		                               "März" = '03', "April" = '04',
-				 		                               "Mai" = '05', "Juni" = '06',
-				 		                               "Juli" = '07', "August" = '08',
-				 		                               "September" = '09', "Oktober" = '10',
-				 		                               "November" = '11',
-				 		                               "Dezember" = '12')),
-				 		actionButton("checkAllMonths",
-				 		             label = "Alle Monate auswählen"),
+				 		                   selected = seq(1,12),
+				 		                   choices = monthChoices),
 				 		checkboxGroupInput("weekdays",
 				 		                   "Wähle Wochentage:",
 				 		                   inline = TRUE,
-				 		                   selected = '3',
-				 		                   choices = c("Montag" = '1', "Dienstag" = '2',
-				 		                               "Mittwoch" = '3', "Donnerstag" = '4',
-				 		                               "Freitag" = '5', "Samstag" = '6',
-				 		                               "Sonntag" = '0')),
-				 		actionButton("checkAllWeekdays",
-				 		             label = "Alle Wochentage auswählen")
+				 		                   selected = seq(0,6),
+				 		                   choices = weekdayChoices)
 				  )
 			  )
 			),
