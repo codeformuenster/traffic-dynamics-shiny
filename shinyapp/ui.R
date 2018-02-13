@@ -7,7 +7,7 @@
 
 # load libraries ####
 # use 00_install_R_packages.R for installing missing packages
-lapply(c("shiny", "shinycssloaders"),
+lapply(c("shiny", "shinycssloaders", "plotly"),
 			 require, character.only = TRUE)
 
 source("global.R")
@@ -51,7 +51,7 @@ shinyUI(
   				 		max = "2017-11-08",
   				 		start = "2013-06-01",
   				 		end = "2017-11-08",
-  				 		format = "dd. M yyyy",
+  				 		format = "d. m. 'yy",
   				 		language = "de", separator = "bis"
   				 	)
   				),
@@ -77,14 +77,7 @@ shinyUI(
 				  )
 			  )
 			),
-			column(5,
-			       withSpinner(
-			         plotOutput(
-			           "plotYear"
-  					     # click = "plot1_click",
-  					     # brush = brushOpts(id = "plot1_brush")
-  					   )
-					   )
+			column(5, withSpinner(plotOutput("plotYear"))
   		),
 			column(4, withSpinner(plotOutput("plotDay")))
 		),

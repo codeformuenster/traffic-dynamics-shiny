@@ -172,7 +172,7 @@ shinyServer(function(input, output, session) {
     		# months
   			date_filter <- paste0(date_filter, " AND strftime('%m', date) IN (")
 
-    		for (midx in 1:length(input$months)) {
+	    	for (midx in 1:length(input$months)) {
     			if (midx != length(input$months)) {
     				# sprintf prints leading 0 (e.g., 03 instead of 3)
     				date_filter <- paste0(date_filter, "'" , sprintf("%02d", as.numeric(input$months[midx])), "',")
