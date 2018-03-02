@@ -48,9 +48,9 @@ shinyUI(
   				 		"date_range",
   				 		"Wähle eine Zeitspanne:",
   				 		min = "2013-06-01",
-  				 		max = "2017-11-08",
+  				 		max = "2017-12-31",
   				 		start = "2013-06-01",
-  				 		end = "2017-11-08",
+  				 		end = "2017-12-31",
   				 		format = "d. m. 'yy",
   				 		language = "de", separator = "bis"
   				 	)
