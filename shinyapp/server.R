@@ -43,6 +43,7 @@ shinyServer(function(input, output, session) {
   						 "'Warendorfer.Straße'" = "'%04061%'",
   						 "'Hafenstraße'" = "'%04010%'",
   						 "'Weseler.Straße'" = "'%01190%'",
+  						 "'Hansaring'" = "'%03290%'",
   						 # Roxel
   						 "'roxel1'" = "'%24020%'", 
   						 "'roxel2'" = "'%24100%'", 
@@ -133,6 +134,7 @@ shinyServer(function(input, output, session) {
   						 "'Warendorfer.Straße'" = "'%04061%'",
   						 "'Hafenstraße'" = "'%04010%'",
   						 "'Weseler.Straße'" = "'%01190%'",
+  						 "'Hansaring'" = "'%03290%'",
   						 # Roxel
   						 "'roxel1'" = "'%24020%'", 
   						 "'roxel2'" = "'%24100%'", 

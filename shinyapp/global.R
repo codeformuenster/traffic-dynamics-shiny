@@ -14,7 +14,8 @@ locationChoices <-
 		"Gartenstraße" = "'Gartenstraße'",
 		"Warendorfer Straße" = "'Warendorfer.Straße'",
 		"Hafenstraße" = "'Hafenstraße'",
-		"Weseler Straße / Kolde-Ring" = "'Weseler.Straße'")
+		"Weseler Straße / Kolde-Ring" = "'Weseler.Straße'",
+		"Hansaring / Albersloher Weg" = "'Hansaring'")
 		# "roxel1" = "'roxel1'", 
 		# "roxel2" = "'roxel2'", 
 		# "roxel3" = "'roxel3'", 
