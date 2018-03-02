@@ -235,7 +235,7 @@ shinyServer(function(input, output, session) {
  		vehicles_year <-
 	   load_filtered_data_from_db() %>%
 	      group_by(date, vehicle) %>%
-	      summarise(count_day = sum(count))
+	      summarise(count_day = sum(count, na.rm = TRUE))
  		cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
     return(vehicles_year)
   })
@@ -245,7 +245,7 @@ shinyServer(function(input, output, session) {
   	vehicles_hour <- 
   		load_filtered_data_from_db() %>%
 	      group_by(date, hour, vehicle) %>%
-	      summarise(count_hour = sum(count))
+	      summarise(count_hour = sum(count, na.rm = TRUE))
   	cat(paste0("aggregated_data_hour() took ",
   	           Sys.time() - start,
   	           " seconds\n"))
