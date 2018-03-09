@@ -38,7 +38,7 @@ shinyUI(
     		 		max = 24,
     		 		value = c(0, 24)
     		  )
-  		  ),  # wellPanel
+  		  ),  # end wellPanel
 			  tabsetPanel(
 			    id = "tabs",
           tabPanel(
@@ -77,12 +77,16 @@ shinyUI(
 				  )
 			  )
 			),
-			column(5, withSpinner(plotOutput("plotYear"))
+			column(5,
+						 withSpinner(plotOutput("plotYear"))
   		),
-			column(4, withSpinner(plotOutput("plotDay")))
-		),
+			column(4,
+						 withSpinner(plotOutput("plotDay"))
+			)
+		), # end fluidRow
 	  fluidRow(
 		  column(12,
+		  			 verbatimTextOutput("stringCounts"),
 		         hr(),
 		         print("Ein Projekt von "), 
 		         a("Code for Münster", href = "http://codeformuenster.org"),

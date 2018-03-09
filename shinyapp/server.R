@@ -24,8 +24,7 @@ shinyServer(function(input, output, session) {
       paste0(names(locationChoices[locationChoices == input$location]),
              ": Anzahl ",
              names(vehicleChoices[vehicleChoices == input$vehicle]),
-             " (nicht angezeigte Daten fehlen noch)")
-      			 # input$location, ": Anzahl ", input$vehicle)
+             " (nicht angezeigte Daten existieren leider nicht)")
     })
 
     observe({
@@ -226,6 +225,10 @@ shinyServer(function(input, output, session) {
 		
 		dbDisconnect(con)
 		
+		# for plotly
+		# names(vehicles$vehicle)["bike"] <- "Fahrrad"
+		# names(vehicles$vehicle)["car"] <- "Kfz"
+		
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
@@ -236,12 +239,14 @@ shinyServer(function(input, output, session) {
  		start <- Sys.time()
  		vehicles_year <-
 	   load_filtered_data_from_db() %>%
-	      group_by(date, vehicle) %>%
-	      summarise(count_day = sum(count, na.rm = TRUE))
- 		cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
+	      mutate(date = as.POSIXct(date)) %>% 
+ 				group_by(date, vehicle) %>%
+ 				summarise(count_day = sum(count, na.rm = TRUE))
+	    cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
+ 		print(head(vehicles_year))
     return(vehicles_year)
   })
- 	
+
   aggregated_data_hour <- reactive({
   	start <- Sys.time()
   	vehicles_hour <- 
@@ -256,31 +261,88 @@ shinyServer(function(input, output, session) {
   
  	output$plotYear <- renderPlot({
   	start <- Sys.time()
-    p <- ggplot(data = aggregated_data_year()) +
-	    geom_line(aes(x = as.POSIXct(date),
-	                  y = count_day, group = vehicle,
+		# plotly, not yet ready (next time I'll use a git branch ...)
+  	# p <- 
+		# 	plot_ly(data = aggregated_data_year(), 
+		# 					x = ~date, y = ~count_day, 
+		# 					type = "scatter", mode = "lines+markers", 
+		# 					size = ~count_day*0.25, 
+		# 					color = ~vehicle, name = ~vehicle) %>%
+		# layout(
+		# 	xaxis = list(title = "Datum"),
+		# 	yaxis = list(title = "Anzahl"),
+		# 	legend = list(orientation = "h", xanchor = "left", x = 0.5))
+  	p <- ggplot(data = aggregated_data_year()) +
+  		geom_line(aes(x = date,
+  									y = count_day, group = vehicle,
 	                  color = vehicle)) +
 	  	labs(x = "Datum", y = "Anzahl", color = "Verkehrsmittel") +
 	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Autos"), 
 	  										 values = c("bike" = "blue", "car" = "red")) +
 	    theme_minimal(base_size = 18) +
-	    theme(legend.position = "bottom")
+  		theme(legend.position = "bottom")
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
   
   output$plotDay <- renderPlot({
   	start <- Sys.time()
+		# plotly, not yet ready (next time I'll use a git branch ...)
+		#   		p <- 
+		# 			plot_ly(data = aggregated_data_hour(), 
+		# 							x = ~hour, y = ~count_hour, 
+		# 							type = "scatter", mode = "lines+markers", 
+		# 							size = ~count_hour*0.25, 
+		# 							color = ~vehicle, 
+		# 							name = ~vehicle) %>%
+		# 		layout(
+		# 			xaxis = list(title = "Stunde"),
+		# 			yaxis = list(title = "Anzahl"),
+		# 			legend = list(orientation = "h", xanchor = "left"))
     p <-
-      ggplot(data = aggregated_data_hour(), aes(x = hour, y = count_hour)) +
-	    geom_line(aes(group = interaction(vehicle, date), color = vehicle),
+    	ggplot(data = aggregated_data_hour(), aes(x = hour, y = count_hour)) +
+    	geom_line(aes(group = interaction(vehicle, date), color = vehicle),
 	              alpha = 0.2) +
 	    labs(x = "Stunde", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Autos"), 
+	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Autos"),
 	  										 values = c("bike" = "blue", "car" = "red")) +
-	    theme_minimal(base_size = 18) + 
+	    theme_minimal(base_size = 18) +
 	    theme(legend.position = "bottom")
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
+  
+  output$stringCounts <-
+  	renderText({
+  		# TODO: dplyr this ... (some say its easier to read :P)
+  		d_year <- aggregated_data_year()
+  		d_hour <- aggregated_data_hour()
+  			
+  		all_bikes <- sum(d_year[d_year$vehicle == "bike", ]$count_day, na.rm = TRUE)
+  		mean_bikes_year <- mean(d_year[d_year$vehicle == "bike", ]$count_day, na.rm = TRUE)
+  		mean_bikes_hour <- mean(d_hour[d_hour$vehicle == "bike", ]$count_hour, na.rm = TRUE)
+  		
+  		all_cars <- sum(d_year[d_year$vehicle == "car", ]$count_day, na.rm = TRUE)
+  		mean_cars_year <- mean(d_year[d_year$vehicle == "car", ]$count_day, na.rm = TRUE)
+  		mean_cars_hour <- mean(d_hour[d_hour$vehicle == "car", ]$count_hour, na.rm = TRUE)
+  		
+  		# does not work but cuts all digits
+  		# TODO: why not?
+  		# options(digits = 2)
+  		
+  		count_string <- 
+  			paste0("Im gewählten Zeitraum:\nGesamtanzahl Fahrräder: ", 
+  					 prettyNum(all_bikes, big.mark = " ", decimal.mark = ","), 
+  					 "\nFahrräder pro Tag (Mittelwert): ",
+  					 prettyNum(mean_bikes_year, big.mark = " ", decimal.mark = ","),
+  					 "\nFahrräder pro Stunde (Mittelwert): ",
+  					 prettyNum(mean_bikes_hour, big.mark = " ", decimal.mark = ","),
+  					 "\nGesamtanzahl Kfz: ", 
+  					 prettyNum(all_cars, big.mark = " ", decimal.mark = ","), 
+  					 "\nKfz pro Tag (Mittelwert): ",
+  					 prettyNum(mean_cars_year, big.mark = " ", decimal.mark = ","),
+  					"\nKfz pro Stunde (Mittelwert): ",
+  					 prettyNum(mean_cars_hour, big.mark = " ", decimal.mark = ","))
+  		return(count_string)
+  	})
 })
