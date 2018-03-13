@@ -314,7 +314,14 @@ shinyServer(function(input, output, session) {
   					 "\nKfz pro Tag (Mittelwert): ",
   					 prettyNum(mean_cars_year, big.mark = " ", decimal.mark = ","),
   					"\nKfz pro Stunde (Mittelwert): ",
-  					 prettyNum(mean_cars_hour, big.mark = " ", decimal.mark = ","))
+  					 prettyNum(mean_cars_hour, big.mark = " ", decimal.mark = ","),
+  					"\ngeschätzter CO2-Ausstoß pro Tag: ",
+  					"Fahrrad: 0, Kfz: TODO",
+  					"\ngeschätzter Stickstoff-Ausstoß pro Tag: ",
+  					"Fahrrad: 0, Kfz: TODO",
+  					"\ngeschätzter Platzverbrauch pro bewegtem Mensch am Tag: ",
+  					"\nFahrrad: Radwegbreite [TODO] / ", mean_bikes_year,
+  					"\nKfz: Fahrbahnbreite [TODO] / ", mean_cars_year)
   		return(count_string)
   	})
 })
