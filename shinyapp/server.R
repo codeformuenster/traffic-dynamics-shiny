@@ -225,10 +225,6 @@ shinyServer(function(input, output, session) {
 		
 		dbDisconnect(con)
 		
-		# for plotly
-		# names(vehicles$vehicle)["bike"] <- "Fahrrad"
-		# names(vehicles$vehicle)["car"] <- "Kfz"
-		
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
@@ -261,17 +257,6 @@ shinyServer(function(input, output, session) {
   
  	output$plotYear <- renderPlot({
   	start <- Sys.time()
-		# plotly, not yet ready (next time I'll use a git branch ...)
-  	# p <- 
-		# 	plot_ly(data = aggregated_data_year(), 
-		# 					x = ~date, y = ~count_day, 
-		# 					type = "scatter", mode = "lines+markers", 
-		# 					size = ~count_day*0.25, 
-		# 					color = ~vehicle, name = ~vehicle) %>%
-		# layout(
-		# 	xaxis = list(title = "Datum"),
-		# 	yaxis = list(title = "Anzahl"),
-		# 	legend = list(orientation = "h", xanchor = "left", x = 0.5))
   	p <- ggplot(data = aggregated_data_year()) +
   		geom_line(aes(x = date,
   									y = count_day, group = vehicle,
@@ -286,19 +271,6 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotDay <- renderPlot({
-  	start <- Sys.time()
-		# plotly, not yet ready (next time I'll use a git branch ...)
-		#   		p <- 
-		# 			plot_ly(data = aggregated_data_hour(), 
-		# 							x = ~hour, y = ~count_hour, 
-		# 							type = "scatter", mode = "lines+markers", 
-		# 							size = ~count_hour*0.25, 
-		# 							color = ~vehicle, 
-		# 							name = ~vehicle) %>%
-		# 		layout(
-		# 			xaxis = list(title = "Stunde"),
-		# 			yaxis = list(title = "Anzahl"),
-		# 			legend = list(orientation = "h", xanchor = "left"))
     p <-
     	ggplot(data = aggregated_data_hour(), aes(x = hour, y = count_hour)) +
     	geom_line(aes(group = interaction(vehicle, date), color = vehicle),
