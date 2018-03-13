@@ -3,6 +3,40 @@ This project implements a shiny-app in a Docker image that visualizes automatic 
 The data are downloaded, pre-processed, and put in a Docker image [in this repository](https://github.com/codeformuenster/traffic-dynamics).
 So, this Docker-based shiny-app implementation downloads the [corresponding Docker image](https://hub.docker.com/r/codeformuenster/traffic-dynamics/) and adds shiny-relevant source code.
 
+## How to start
+
+### Without docker
+
+This shiny app assumes that the folder `shinyapp/data/database` contains a proper sqlite database. This database is created by the progam in our [traffic-dynamics repo](https://www.github.com/codeformuenster/traffic-dynamics).
+If you have the database available, you can create a symlink to it.
+
+```
+cd shinyapp
+mkdir data
+ln -s whereever/you/stored/the/data/database database
+```
+
+Then you can start this shiny app for instance by using RStudio.
+
+
+### With docker
+
+Make sure to rename or delete the local symlink to the database you created in the step above, otherwise, the docker image won't run.
+The following commands start the docker daemon, build a local docker image and run this local image:
+
+```
+sudo systemctl start docker
+sudo docker build -t traffic-dynamics-local .
+sudo docker run --rm -p 3838:3838 traffic-dynamics-local
+```
+
+Alternatively, you can download and run the docker image from the docker cloud:
+```
+sudo docker run --rm -p 3838:3838 codeformuenster/traffic-dynamics-shiny:latest
+```
+
+Afterwards, point your browser to [localhost:3838](localhost:3838).
+
 ## Contributors
 
 * [silberzwiebel](https://github.com/silberzwiebel)
