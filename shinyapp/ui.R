@@ -100,11 +100,11 @@ shinyUI(
 			), # end column counts / models
 			column(
 				5,
-				withSpinner(plotOutput("plotYear"))
+				withSpinner(plotlyOutput("plotYear"))
   		),
 			column(
 				4,
-				withSpinner(plotOutput("plotDay"))
+				withSpinner(plotlyOutput("plotDay"))
 			)
 		), # end fluid row that contains almost everything
 		fluidRow(

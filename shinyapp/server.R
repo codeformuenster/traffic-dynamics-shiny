@@ -227,7 +227,9 @@ shinyServer(function(input, output, session) {
 		print(sql_string)
 		
 		vehicles <- dbGetQuery(conn = con, sql_string)
-		
+
+		dbDisconnect(con)
+
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
@@ -242,7 +244,11 @@ shinyServer(function(input, output, session) {
  				group_by(date, vehicle) %>%
  				summarise(count_day = sum(count, na.rm = TRUE))
 	    cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
- 		print(head(vehicles_year))
+	    
+    # for plotly; doesn't work, hmm ...
+    # names(vehicles_year$vehicle)["bike"] <- "Fahrrad"
+    # names(vehicles_year$vehicle)["car"] <- "Kfz"
+	    
     return(vehicles_year)
   })
 
@@ -256,35 +262,52 @@ shinyServer(function(input, output, session) {
   	cat(paste0("aggregated_data_hour() took ",
   	           Sys.time() - start,
   	           " seconds\n"))
+  	
+  	# for plotly; doesn't work, hmm ...
+  	# names(vehicles_hour$vehicle)["bike"] <- "Fahrrad"
+  	# names(vehicles_hour$vehicle)["car"] <- "Kfz"
+  	
   	return(vehicles_hour)
   })
   
- 	output$plotYear <- renderPlot({
+ 	output$plotYear <- renderPlotly({
   	start <- Sys.time()
-  	p <- ggplot(data = aggregated_data_year()) +
-  		geom_line(aes(x = date,
-  									y = count_day, group = vehicle,
-	                  color = vehicle)) +
-	  	labs(x = "Datum", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Kfz"), 
-	  										 values = c("bike" = "blue", "car" = "red")) +
-	    theme_minimal(base_size = 18) +
-  		theme(legend.position = "bottom")
+  	p <- plot_ly(x = ~aggregated_data_year()$date, 
+  	        y = ~aggregated_data_year()$count_day, 
+  	        type = "scatter", mode = "lines+markers",
+  	        color = ~aggregated_data_year()$vehicle, 
+  	        name = ~aggregated_data_year()$vehicle,
+  	        hoverinfo = "text",
+  	        text = ~paste0(aggregated_data_year()$date, 
+  	                      ", ", aggregated_data_year()$vehicle,
+  	                      ": ", aggregated_data_year()$count_day)) %>% 
+  	  layout(xaxis = list(title = "Datum"), 
+  	         yaxis = list(title="Anzahl"), 
+  	         legend = list(orientation = "h", xanchor = "left", x = 0.5))
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
   
-  output$plotDay <- renderPlot({
+  output$plotDay <- renderPlotly({
   	start <- Sys.time()
-    p <-
-    	ggplot(data = aggregated_data_hour(), aes(x = hour, y = count_hour)) +
-    	geom_line(aes(group = interaction(vehicle, date), color = vehicle),
-	              alpha = 0.2) +
-	    labs(x = "Stunde", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Kfz"),
-	  										 values = c("bike" = "blue", "car" = "red")) +
-	    theme_minimal(base_size = 18) +
-	    theme(legend.position = "bottom")
+		  		p <-
+					plot_ly(x = ~aggregated_data_hour()$hour, 
+									y = ~aggregated_data_hour()$count_hour,
+									type = "scatter", 
+									mode = "markers",
+									alpha = 0.1,
+									size = ~aggregated_data_hour()$count_hour * 0.1,
+									color = ~aggregated_data_hour()$vehicle,
+									name = ~names(aggregated_data_hour()$vehicle),
+									hoverinfo = "text",
+									text = ~paste0(aggregated_data_hour()$date, 
+									               ", ", aggregated_data_hour()$hour, 
+									               " Uhr, ", aggregated_data_hour()$vehicle,
+									               ": ", aggregated_data_hour()$count_hour)) %>%
+				layout(
+					xaxis = list(title = "Stunde"),
+					yaxis = list(title = "Anzahl"),
+					legend = list(orientation = "h", xanchor = "left"))
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
