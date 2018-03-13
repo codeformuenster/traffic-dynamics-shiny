@@ -78,10 +78,10 @@ shinyUI(
 			  )
 			),
 			column(5,
-						 withSpinner(plotOutput("plotYear"))
+						 withSpinner(plotlyOutput("plotYear"))
   		),
 			column(4,
-						 withSpinner(plotOutput("plotDay"))
+						 withSpinner(plotlyOutput("plotDay"))
 			)
 		), # end fluidRow
 	  fluidRow(
