@@ -148,12 +148,12 @@ shinyServer(function(input, output, session) {
   			paste0(" WHERE hour >= ", input$hour_range[1],
   						" AND hour <= ", input$hour_range[2])
     	
-    	if (input$tabs == "timerange") {
+    	if (input$tabs_time == "timerange") {
   	  	date_filter <- 
   	  		paste0(date_filter,
   			" AND date >= '", input$date_range[1], "'", 
   			" AND date <= '", input$date_range[2], "'")
-    	} else if (input$tabs == "timepoints") {
+    	} else if (input$tabs_time == "timepoints") {
     		
     		# years
     		date_filter <- 
