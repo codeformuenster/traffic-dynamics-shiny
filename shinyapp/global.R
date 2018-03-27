@@ -7,14 +7,14 @@ startVehicle <- "bikes"
 
 locationChoices <-
 	c("Neutor" = "'Neutor'", 
-		"Wolbecker Straße / Servatiiplatz" = "'Wolbecker.Straße'", 
+		"Wolbecker Straße" = "'Wolbecker.Straße'", 
 		"Hüfferstraße" = "'Hüfferstraße'", 
 		"Hammer Straße" = "'Hammer.Straße'",
-		"Eisenbahnstraße / Promenade" = "'Promenade'",
+		"Promenade" = "'Promenade'",
 		"Gartenstraße" = "'Gartenstraße'",
 		"Warendorfer Straße" = "'Warendorfer.Straße'",
 		"Hafenstraße" = "'Hafenstraße'",
-		"Weseler Straße / Kolde-Ring" = "'Weseler.Straße'",
+		"Weseler Straße" = "'Weseler.Straße'",
 		"Hansaring / Albersloher Weg" = "'Hansaring'")
 		# "roxel1" = "'roxel1'", 
 		# "roxel2" = "'roxel2'", 
