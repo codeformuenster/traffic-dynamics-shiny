@@ -37,11 +37,11 @@ shinyServer(function(input, output, session) {
   						 "'Wolbecker.Straße'" = "'%04050%'",
   						 "'Hüfferstraße'" = "'%03052%'",
   						 "'Hammer.Straße'" = "'%07030%'",
-  						 "'Promenade / Eisenbahnstraße'" = "'%04051%'",
+  						 "'Promenade'" = "'%04051%'",
   						 "'Gartenstraße'" = "'%04073%'",
   						 "'Warendorfer.Straße'" = "'%04061%'",
   						 "'Hafenstraße'" = "'%04010%'",
-  						 "'Weseler.Straße'" = "'%01190%'",
+  						 "'Weseler.Straße'" = "'%01190%'", # TODO add only proper directions for Kfz Kolde-Ring (i.e., only Weseler Str.)
   						 "'Hansaring'" = "'%03290%'",
   						 # Roxel
   						 "'roxel1'" = "'%24020%'", 
@@ -322,8 +322,8 @@ shinyServer(function(input, output, session) {
   					"\ngeschätzter Stickstoff-Ausstoß pro Tag: ",
   					"Fahrrad: 0, Kfz: TODO",
   					"\ngeschätzter Platzverbrauch pro bewegtem Mensch am Tag: ",
-  					"\nFahrrad: Radwegbreite [TODO] / ", mean_bikes_year,
-  					"\nKfz: Fahrbahnbreite [TODO] / ", mean_cars_year)
+  					"\n\tFahrrad: Radwegbreite [TODO] / ", mean_bikes_year,
+  					"\n\tKfz: Fahrbahnbreite [TODO] /  (", mean_cars_year, " * durchschnittliche Anzahl Personen im Auto [TODO])")
   		return(count_string)
   	})
 })
