@@ -262,7 +262,7 @@ shinyServer(function(input, output, session) {
   									y = count_day, group = vehicle,
 	                  color = vehicle)) +
 	  	labs(x = "Datum", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Autos"), 
+	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Kfz"), 
 	  										 values = c("bike" = "blue", "car" = "red")) +
 	    theme_minimal(base_size = 18) +
   		theme(legend.position = "bottom")
@@ -276,7 +276,7 @@ shinyServer(function(input, output, session) {
     	geom_line(aes(group = interaction(vehicle, date), color = vehicle),
 	              alpha = 0.2) +
 	    labs(x = "Stunde", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Autos"),
+	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Kfz"),
 	  										 values = c("bike" = "blue", "car" = "red")) +
 	    theme_minimal(base_size = 18) +
 	    theme(legend.position = "bottom")

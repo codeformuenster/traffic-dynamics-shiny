@@ -1,7 +1,7 @@
 vehicleChoices <- 
 	c("Fahrräder" = "bikes", 
-		"Autos" = "cars", 
-		"Fahrräder & Autos" = "both")
+		"Kfz" = "cars", 
+		"Fahrräder & Kfz" = "both")
 
 startVehicle <- "bikes"
 
