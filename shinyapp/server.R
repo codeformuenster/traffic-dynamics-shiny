@@ -37,7 +37,7 @@ shinyServer(function(input, output, session) {
   						 "'Wolbecker.Straße'" = "'%04050%'",
   						 "'Hüfferstraße'" = "'%03052%'",
   						 "'Hammer.Straße'" = "'%07030%'",
-  						 "'Promenade'" = "'%04051%'",
+  						 "'Promenade / Eisenbahnstraße'" = "'%04051%'",
   						 "'Gartenstraße'" = "'%04073%'",
   						 "'Warendorfer.Straße'" = "'%04061%'",
   						 "'Hafenstraße'" = "'%04010%'",
@@ -247,6 +247,7 @@ shinyServer(function(input, output, session) {
   	start <- Sys.time()
   	vehicles_hour <- 
   		load_filtered_data_from_db() %>%
+	      mutate(date = as.POSIXct(date)) %>% 
 	      group_by(date, hour, vehicle) %>%
 	      summarise(count_hour = sum(count, na.rm = TRUE))
   	cat(paste0("aggregated_data_hour() took ",
@@ -271,6 +272,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotDay <- renderPlot({
+  	start <- Sys.time()
     p <-
     	ggplot(data = aggregated_data_hour(), aes(x = hour, y = count_hour)) +
     	geom_line(aes(group = interaction(vehicle, date), color = vehicle),
