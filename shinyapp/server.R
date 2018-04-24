@@ -18,6 +18,17 @@ sink(stderr(), type = "output")
 # Define server logic required to plot
 shinyServer(function(input, output, session) {
 	
+	# open connection to database
+	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
+	
+	# close connection to database once shiny session ended
+	session$onSessionEnded(
+		function(){ 
+		if (!is.null(con)) { 
+			dbDisconnect(con) 
+		} 
+	}) 
+	
   # Return the formula text for printing as a caption
   output$caption <- 
     renderText({
@@ -56,8 +67,6 @@ shinyServer(function(input, output, session) {
   			dates_in_car_data <- data.frame(date = NA_character_)
 				dates_in_bike_data <- data.frame(date = NA_character_)
 				
-				con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
-    				
 				if (input$vehicle == "bikes" | input$vehicle == "both") {
 					dates_in_bike_data <-
 						dbGetQuery(conn = con, 
@@ -70,8 +79,6 @@ shinyServer(function(input, output, session) {
 											 paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ", 
 											 			 sql_location_cars, " AND count != ''"))
 				}
-				
-				dbDisconnect(con)
 				
 				years_in_data <- 
 					sort(unique(c(as.character(year(dates_in_bike_data$date)), 
@@ -115,8 +122,6 @@ shinyServer(function(input, output, session) {
   load_filtered_data_from_db <-
     reactive({
     	start <- Sys.time()
-    	
-    	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
     	
   		sql_table_bikes <- "bikes"
   		sql_table_cars <- "cars"
@@ -222,8 +227,6 @@ shinyServer(function(input, output, session) {
 		print(sql_string)
 		
 		vehicles <- dbGetQuery(conn = con, sql_string)
-		
-		dbDisconnect(con)
 		
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
