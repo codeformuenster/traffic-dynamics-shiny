@@ -15,11 +15,13 @@ source("global.R")
 # to see stdout logs, too
 sink(stderr(), type = "output")
 
+# open connection to database
+con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
+	
+
+
 # Define server logic required to plot
 shinyServer(function(input, output, session) {
-	
-	# open connection to database
-	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
 	
 	# close connection to database once shiny session ended
 	session$onSessionEnded(
@@ -40,6 +42,8 @@ shinyServer(function(input, output, session) {
 
     observe({
   		# only show filtering option relevant for the current data
+    	
+    	req(con)
 			
     	# TODO move the following switch to global.R to have the code only once
   		sql_location_cars <- 
@@ -122,6 +126,8 @@ shinyServer(function(input, output, session) {
   load_filtered_data_from_db <-
     reactive({
     	start <- Sys.time()
+    	
+    	req(con)
     	
   		sql_table_bikes <- "bikes"
   		sql_table_cars <- "cars"
@@ -227,8 +233,6 @@ shinyServer(function(input, output, session) {
 		print(sql_string)
 		
 		vehicles <- dbGetQuery(conn = con, sql_string)
-
-		dbDisconnect(con)
 
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
