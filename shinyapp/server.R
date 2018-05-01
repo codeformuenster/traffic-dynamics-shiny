@@ -247,7 +247,7 @@ shinyServer(function(input, output, session) {
  				group_by(date, vehicle) %>%
  				summarise(count_day = sum(count, na.rm = TRUE))
 	    cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
-	    
+
     return(vehicles_year)
   })
 
