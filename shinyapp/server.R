@@ -274,7 +274,7 @@ shinyServer(function(input, output, session) {
   	start <- Sys.time()
   	p <- plot_ly(x = ~aggregated_data_year()$date, 
   	        y = ~aggregated_data_year()$count_day, 
-  	        type = "scatter", mode = "lines+markers",
+  	        type = "scattergl", mode = "lines+markers",
   	        color = ~aggregated_data_year()$vehicle, 
   	        name = ~aggregated_data_year()$vehicle,
   	        hoverinfo = "text",
@@ -293,10 +293,10 @@ shinyServer(function(input, output, session) {
 		  		p <-
 					plot_ly(x = ~aggregated_data_hour()$hour, 
 									y = ~aggregated_data_hour()$count_hour,
-									type = "scatter", 
+									type = "scattergl", 
 									mode = "markers",
 									alpha = 0.1,
-									size = ~aggregated_data_hour()$count_hour * 0.1,
+								#	size = ~aggregated_data_hour()$count_hour * 0.1,
 									color = ~aggregated_data_hour()$vehicle,
 									name = ~names(aggregated_data_hour()$vehicle),
 									hoverinfo = "text",
