@@ -17,10 +17,10 @@ sink(stderr(), type = "output")
 
 # Define server logic required to plot
 shinyServer(function(input, output, session) {
-	
+
 	# open connection to database
 	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
-	
+		
 	# close connection to database once shiny session ended
 	session$onSessionEnded(
 		function(){ 
@@ -40,6 +40,8 @@ shinyServer(function(input, output, session) {
 
     observe({
   		# only show filtering option relevant for the current data
+    	
+    	req(con)
 			
     	# TODO move the following switch to global.R to have the code only once
   		sql_location_cars <- 
@@ -122,6 +124,8 @@ shinyServer(function(input, output, session) {
   load_filtered_data_from_db <-
     reactive({
     	start <- Sys.time()
+    	
+    	req(con)
     	
   		sql_table_bikes <- "bikes"
   		sql_table_cars <- "cars"
@@ -227,7 +231,7 @@ shinyServer(function(input, output, session) {
 		print(sql_string)
 		
 		vehicles <- dbGetQuery(conn = con, sql_string)
-		
+
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
@@ -239,10 +243,11 @@ shinyServer(function(input, output, session) {
  		vehicles_year <-
 	   load_filtered_data_from_db() %>%
 	      mutate(date = as.POSIXct(date)) %>% 
+ 				mutate(vehicle = factor(vehicle, levels = c("bike", "car"), labels = c("Fahrrad", "Kfz"))) %>% 
  				group_by(date, vehicle) %>%
  				summarise(count_day = sum(count, na.rm = TRUE))
 	    cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
- 		print(head(vehicles_year))
+
     return(vehicles_year)
   })
 
@@ -251,40 +256,55 @@ shinyServer(function(input, output, session) {
   	vehicles_hour <- 
   		load_filtered_data_from_db() %>%
 	      mutate(date = as.POSIXct(date)) %>% 
+  			mutate(vehicle = factor(vehicle, levels = c("bike", "car"), labels = c("Fahrrad", "Kfz"))) %>% 
 	      group_by(date, hour, vehicle) %>%
 	      summarise(count_hour = sum(count, na.rm = TRUE))
   	cat(paste0("aggregated_data_hour() took ",
   	           Sys.time() - start,
   	           " seconds\n"))
+  	
   	return(vehicles_hour)
   })
   
- 	output$plotYear <- renderPlot({
+ 	output$plotYear <- renderPlotly({
   	start <- Sys.time()
-  	p <- ggplot(data = aggregated_data_year()) +
-  		geom_line(aes(x = date,
-  									y = count_day, group = vehicle,
-	                  color = vehicle)) +
-	  	labs(x = "Datum", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Kfz"), 
-	  										 values = c("bike" = "blue", "car" = "red")) +
-	    theme_minimal(base_size = 18) +
-  		theme(legend.position = "bottom")
+  	p <- plot_ly(x = ~aggregated_data_year()$date, 
+  	        y = ~aggregated_data_year()$count_day, 
+  	        type = "scattergl", mode = "lines+markers",
+  	        color = ~aggregated_data_year()$vehicle, 
+  	        name = ~aggregated_data_year()$vehicle,
+  	        hoverinfo = "text",
+  	        text = ~paste0(strftime(aggregated_data_year()$date, format = "%d. %m. %Y"), 
+  	                      ", ", aggregated_data_year()$vehicle,
+  	                      ": ", aggregated_data_year()$count_day)) %>% 
+  	  layout(xaxis = list(title = "Datum"), 
+  	         yaxis = list(title = "Anzahl"),
+						legend = list(x = 0.1, y = 0.9)
+  	  			 )
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
   
-  output$plotDay <- renderPlot({
+  output$plotDay <- renderPlotly({
   	start <- Sys.time()
-    p <-
-    	ggplot(data = aggregated_data_hour(), aes(x = hour, y = count_hour)) +
-    	geom_line(aes(group = interaction(vehicle, date), color = vehicle),
-	              alpha = 0.2) +
-	    labs(x = "Stunde", y = "Anzahl", color = "Verkehrsmittel") +
-	  	scale_color_manual(labels = c("bike" = "Fahrräder", "car" = "Kfz"),
-	  										 values = c("bike" = "blue", "car" = "red")) +
-	    theme_minimal(base_size = 18) +
-	    theme(legend.position = "bottom")
+		  		p <-
+					plot_ly(x = ~aggregated_data_hour()$hour, 
+									y = ~aggregated_data_hour()$count_hour,
+									type = "scattergl", 
+									mode = "lines+markers",
+									alpha = 0.1,
+									color = ~aggregated_data_hour()$vehicle,
+									name = ~names(aggregated_data_hour()$vehicle),
+									hoverinfo = "text",
+									text = ~paste0(strftime(aggregated_data_hour()$date, format = "%d. %m. %Y"), 
+									               ", ", aggregated_data_hour()$hour, 
+									               " Uhr, ", aggregated_data_hour()$vehicle,
+									               ": ", aggregated_data_hour()$count_hour)) %>%
+				layout(
+					xaxis = list(title = "Stunde"),
+					yaxis = list(title = "Anzahl"),
+					legend = list(x = 0.1, y = 0.9)
+				)
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
