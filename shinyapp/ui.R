@@ -50,6 +50,7 @@ shinyUI(
 						),  # end wellPanel vehicle / location choice
 						tabsetPanel(
 							id = "tabs_time",
+							selected = "timepoints",
 							tabPanel(
 								"Zeitspanne",
 								value = "timerange", 
