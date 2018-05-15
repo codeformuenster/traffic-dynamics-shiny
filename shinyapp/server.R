@@ -226,46 +226,32 @@ shinyServer(function(input, output, session) {
 			" UNION SELECT date, hour, count, location, vehicle",
     	" FROM ", sql_table, date_filter,
 			" AND location LIKE ", sql_location)
-  	}
-  		
+		}
+		
 		print(sql_string)
 		
-		vehicles <- dbGetQuery(conn = con, sql_string)
-
+		vehicles <- dbGetQuery(conn = con, sql_string) %>% 
+			mutate(date = as.POSIXct(date)) %>% 
+			mutate(vehicle = factor(vehicle, levels = c("bike", "car"), 
+															labels = c("Fahrrad", "Kfz")))
+		
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
 		return(vehicles)
-	})  # reactive
+	})  # end reactive
 
  	aggregated_data_year <- reactive({
  		start <- Sys.time()
  		vehicles_year <-
 	   load_filtered_data_from_db() %>%
-	      mutate(date = as.POSIXct(date)) %>% 
- 				mutate(vehicle = factor(vehicle, levels = c("bike", "car"), labels = c("Fahrrad", "Kfz"))) %>% 
- 				group_by(date, vehicle) %>%
- 				summarise(count_day = sum(count, na.rm = TRUE))
+ 			group_by(date, vehicle) %>%
+ 			summarise(count_day = sum(count, na.rm = TRUE))
 	    cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
 
     return(vehicles_year)
   })
-
-  aggregated_data_hour <- reactive({
-  	start <- Sys.time()
-  	vehicles_hour <- 
-  		load_filtered_data_from_db() %>%
-	      mutate(date = as.POSIXct(date)) %>% 
-  			mutate(vehicle = factor(vehicle, levels = c("bike", "car"), labels = c("Fahrrad", "Kfz"))) %>% 
-	      group_by(date, hour, vehicle) %>%
-	      summarise(count_hour = sum(count, na.rm = TRUE))
-  	cat(paste0("aggregated_data_hour() took ",
-  	           Sys.time() - start,
-  	           " seconds\n"))
-  	
-  	return(vehicles_hour)
-  })
-  
+ 	
  	output$plotYear <- renderPlotly({
   	start <- Sys.time()
   	p <- plot_ly(x = ~aggregated_data_year()$date, 
@@ -287,23 +273,23 @@ shinyServer(function(input, output, session) {
   
   output$plotDay <- renderPlotly({
   	start <- Sys.time()
-		  		p <-
-					plot_ly(x = ~aggregated_data_hour()$hour, 
-									y = ~aggregated_data_hour()$count_hour,
-									type = "scattergl", 
-									mode = "lines+markers",
-									alpha = 0.1,
-									color = ~aggregated_data_hour()$vehicle,
-									name = ~names(aggregated_data_hour()$vehicle),
-									hoverinfo = "text",
-									text = ~paste0(strftime(aggregated_data_hour()$date, format = "%d. %m. %Y"), 
-									               ", ", aggregated_data_hour()$hour, 
-									               " Uhr, ", aggregated_data_hour()$vehicle,
-									               ": ", aggregated_data_hour()$count_hour)) %>%
-				layout(
-					xaxis = list(title = "Stunde"),
-					yaxis = list(title = "Anzahl"),
-					legend = list(x = 0.1, y = 0.9)
+  	p <-
+  		plot_ly(x = ~load_filtered_data_from_db()$hour, 
+  						y = ~load_filtered_data_from_db()$count,
+							type = "scattergl", 
+							mode = "lines+markers",
+							alpha = 0.1,
+							color = ~load_filtered_data_from_db()$vehicle,
+							name = ~names(load_filtered_data_from_db()$vehicle),
+							hoverinfo = "text",
+							text = ~paste0(strftime(load_filtered_data_from_db()$date, format = "%d. %m. %Y"), 
+														 ", ", load_filtered_data_from_db()$hour, 
+														 " Uhr, ", load_filtered_data_from_db()$vehicle,
+														 ": ", load_filtered_data_from_db()$count)) %>%
+  		layout(
+  			xaxis = list(title = "Stunde"),
+				yaxis = list(title = "Anzahl"),
+				legend = list(x = 0.1, y = 0.9)
 				)
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
@@ -313,15 +299,15 @@ shinyServer(function(input, output, session) {
   	renderText({
   		# TODO: dplyr this ... (some say its easier to read :P)
   		d_year <- aggregated_data_year()
-  		d_hour <- aggregated_data_hour()
+  		d_hour <- load_filtered_data_from_db()
   		
   		all_bikes <- sum(d_year[d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
   		mean_bikes_year <- mean(d_year[d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
-  		mean_bikes_hour <- mean(d_hour[d_hour$vehicle == "Fahrrad", ]$count_hour, na.rm = TRUE)
+  		mean_bikes_hour <- mean(d_hour[d_hour$vehicle == "Fahrrad", ]$count, na.rm = TRUE)
   		
   		all_cars <- sum(d_year[d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
   		mean_cars_year <- mean(d_year[d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
-  		mean_cars_hour <- mean(d_hour[d_hour$vehicle == "Kfz", ]$count_hour, na.rm = TRUE)
+  		mean_cars_hour <- mean(d_hour[d_hour$vehicle == "Kfz", ]$count, na.rm = TRUE)
   		
   		# does not work but cuts all digits
   		# TODO: why not?
