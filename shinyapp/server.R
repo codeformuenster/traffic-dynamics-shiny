@@ -314,14 +314,14 @@ shinyServer(function(input, output, session) {
   		# TODO: dplyr this ... (some say its easier to read :P)
   		d_year <- aggregated_data_year()
   		d_hour <- aggregated_data_hour()
-  			
-  		all_bikes <- sum(d_year[d_year$vehicle == "bike", ]$count_day, na.rm = TRUE)
-  		mean_bikes_year <- mean(d_year[d_year$vehicle == "bike", ]$count_day, na.rm = TRUE)
-  		mean_bikes_hour <- mean(d_hour[d_hour$vehicle == "bike", ]$count_hour, na.rm = TRUE)
   		
-  		all_cars <- sum(d_year[d_year$vehicle == "car", ]$count_day, na.rm = TRUE)
-  		mean_cars_year <- mean(d_year[d_year$vehicle == "car", ]$count_day, na.rm = TRUE)
-  		mean_cars_hour <- mean(d_hour[d_hour$vehicle == "car", ]$count_hour, na.rm = TRUE)
+  		all_bikes <- sum(d_year[d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
+  		mean_bikes_year <- mean(d_year[d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
+  		mean_bikes_hour <- mean(d_hour[d_hour$vehicle == "Fahrrad", ]$count_hour, na.rm = TRUE)
+  		
+  		all_cars <- sum(d_year[d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
+  		mean_cars_year <- mean(d_year[d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
+  		mean_cars_hour <- mean(d_hour[d_hour$vehicle == "Kfz", ]$count_hour, na.rm = TRUE)
   		
   		# does not work but cuts all digits
   		# TODO: why not?
