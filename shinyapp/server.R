@@ -15,8 +15,23 @@ source("global.R")
 # to see stdout logs, too
 sink(stderr(), type = "output")
 
+NullPlot <- ggplotly(
+  ggplot(NULL) +
+    annotate(
+      geom = "text",
+      x = 0,
+      y = 0,
+      label = "No data available - please change your selection.",
+      hjust = 0
+    ) + theme_void()
+)
+
 # Define server logic required to plot
 shinyServer(function(input, output, session) {
+  
+  options(warn = -1) # suppress warnings
+  
+  dbData <- reactiveValues(d_hour=NULL, d_year=NULL)
 
 	# open connection to database
 	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
@@ -94,21 +109,18 @@ shinyServer(function(input, output, session) {
 					sort(unique(c(as.numeric(wday(dates_in_bike_data$date) - 1),
 												as.numeric(wday(dates_in_car_data$date) - 1))))
 				
-				updateCheckboxGroupInput(session = session,
+				updateSelectInput(session = session,
 				                   inputId = "years",
-													 inline = TRUE,
 													 selected = isolate(input$years),
 				                   choices = years_in_data)
 				
-				updateCheckboxGroupInput(session = session,
+				updateSelectInput(session = session,
 				                   inputId = "months",
-													 inline = TRUE,
 					 		             selected = isolate(input$months),
 				                   choices = monthChoices[monthChoices %in% months_in_data])
 				
-				updateCheckboxGroupInput(session = session,
+				updateSelectInput(session = session,
 				                   inputId = "weekdays",
-													 inline = TRUE,
 					 		             selected = isolate(input$weekdays),
 				                   choices = weekdayChoices[weekdayChoices %in% wdays_in_data])
 				
@@ -121,8 +133,7 @@ shinyServer(function(input, output, session) {
   				 	)
 	})
 	
-  load_filtered_data_from_db <-
-    reactive({
+  load_filtered_data_from_db <- eventReactive(input$QueryBtn, ignoreNULL=FALSE, {
     	start <- Sys.time()
     	
     	req(con)
@@ -229,6 +240,9 @@ shinyServer(function(input, output, session) {
 		}
 		
 		print(sql_string)
+		# example string:
+		# sql_string <- "SELECT date, hour, count, location, vehicle FROM bikes WHERE hour >= 0 AND hour <= 24 AND strftime('%Y', date) IN ('2017') AND strftime('%m', date) IN ('01','02','03','04','05','06','07','08','09','10','11','12') AND strftime('%w', date) IN ('1','2','3','4','5','6','0') AND location LIKE 'Neutor'"
+		
 		
 		vehicles <- dbGetQuery(conn = con, sql_string) %>% 
 			mutate(date = as.POSIXct(date)) %>% 
@@ -241,10 +255,15 @@ shinyServer(function(input, output, session) {
 		return(vehicles)
 	})  # end reactive
 
+  observe({
+    dbData$d_hour <- load_filtered_data_from_db()
+  })
+  
  	aggregated_data_year <- reactive({
+ 	  req(dbData$d_hour)
  		start <- Sys.time()
  		vehicles_year <-
-	   load_filtered_data_from_db() %>%
+ 		  dbData$d_hour %>%
  			group_by(date, vehicle) %>%
  			summarise(count_day = sum(count, na.rm = TRUE))
 	    cat(paste("aggregated_data_year() took", Sys.time() - start, "seconds\n"))
@@ -252,45 +271,58 @@ shinyServer(function(input, output, session) {
     return(vehicles_year)
   })
  	
+ 	observe({
+ 	dbData$d_year <- aggregated_data_year()
+ 	})
+ 	
  	output$plotYear <- renderPlotly({
   	start <- Sys.time()
-  	p <- plot_ly(x = ~aggregated_data_year()$date, 
-  	        y = ~aggregated_data_year()$count_day, 
-  	        type = "scattergl", mode = "lines+markers",
-  	        color = ~aggregated_data_year()$vehicle, 
-  	        name = ~aggregated_data_year()$vehicle,
-  	        hoverinfo = "text",
-  	        text = ~paste0(strftime(aggregated_data_year()$date, format = "%d. %m. %Y"), 
-  	                      ", ", aggregated_data_year()$vehicle,
-  	                      ": ", aggregated_data_year()$count_day)) %>% 
-  	  layout(xaxis = list(title = "Datum"), 
-  	         yaxis = list(title = "Anzahl"),
-						legend = list(x = 0.1, y = 0.9)
-  	  			 )
+  	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
+  	  p <- NullPlot
+  	} else {
+  	  p <- plot_ly(data=dbData$d_year, x = ~date, 
+  	               y = ~count_day, 
+  	               type = "scattergl", mode = "lines+markers",
+  	               color = ~vehicle, 
+  	               name = ~vehicle,
+  	               hoverinfo = "text",
+  	               text = ~paste0(strftime(date, format = "%d. %m. %Y"), 
+  	                              ", ", vehicle,
+  	                              ": ", count_day)) %>% 
+  	    layout(xaxis = list(title = "Datum"), 
+  	           yaxis = list(title = "Anzahl"),
+  	           legend = list(x = 0.1, y = 0.9)
+  	    )
+  	}
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
   
   output$plotDay <- renderPlotly({
   	start <- Sys.time()
-  	p <-
-  		plot_ly(x = ~load_filtered_data_from_db()$hour, 
-  						y = ~load_filtered_data_from_db()$count,
-							type = "scattergl", 
-							mode = "lines+markers",
-							alpha = 0.1,
-							color = ~load_filtered_data_from_db()$vehicle,
-							name = ~names(load_filtered_data_from_db()$vehicle),
-							hoverinfo = "text",
-							text = ~paste0(strftime(load_filtered_data_from_db()$date, format = "%d. %m. %Y"), 
-														 ", ", load_filtered_data_from_db()$hour, 
-														 " Uhr, ", load_filtered_data_from_db()$vehicle,
-														 ": ", load_filtered_data_from_db()$count)) %>%
-  		layout(
-  			xaxis = list(title = "Stunde"),
-				yaxis = list(title = "Anzahl"),
-				legend = list(x = 0.1, y = 0.9)
-				)
+  	length(dbData$d_hour)
+  	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
+  	  p <- NullPlot
+  	} else {
+  	  p <-
+  	    plot_ly(data=dbData$d_hour, x = ~hour, 
+  	            y = ~count,
+  	            type = "scattergl", 
+  	            mode = "lines+markers",
+  	            alpha = 0.1,
+  	            color = ~vehicle,
+  	            name = ~names(vehicle),
+  	            hoverinfo = "text",
+  	            text = ~paste0(strftime(date, format = "%d. %m. %Y"), 
+  	                           ", ", hour, 
+  	                           " Uhr, ", vehicle,
+  	                           ": ", count)) %>%
+  	    layout(
+  	      xaxis = list(title = "Stunde"),
+  	      yaxis = list(title = "Anzahl"),
+  	      legend = list(x = 0.1, y = 0.9)
+  	    )
+  	}
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
@@ -298,16 +330,17 @@ shinyServer(function(input, output, session) {
   output$stringCounts <-
   	renderText({
   		# TODO: dplyr this ... (some say its easier to read :P)
-  		d_year <- aggregated_data_year()
-  		d_hour <- load_filtered_data_from_db()
+
+  	  req(dbData$d_year)
+  	  req(dbData$d_hour)
+  	  
+  		all_bikes <- sum(dbData$d_year[dbData$d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
+  		mean_bikes_year <- mean(dbData$d_year[dbData$d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
+  		mean_bikes_hour <- mean(dbData$d_hour[dbData$d_hour$vehicle == "Fahrrad", ]$count, na.rm = TRUE)
   		
-  		all_bikes <- sum(d_year[d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
-  		mean_bikes_year <- mean(d_year[d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
-  		mean_bikes_hour <- mean(d_hour[d_hour$vehicle == "Fahrrad", ]$count, na.rm = TRUE)
-  		
-  		all_cars <- sum(d_year[d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
-  		mean_cars_year <- mean(d_year[d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
-  		mean_cars_hour <- mean(d_hour[d_hour$vehicle == "Kfz", ]$count, na.rm = TRUE)
+  		all_cars <- sum(dbData$d_year[dbData$d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
+  		mean_cars_year <- mean(dbData$d_year[dbData$d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
+  		mean_cars_hour <- mean(dbData$d_hour[dbData$d_hour$vehicle == "Kfz", ]$count, na.rm = TRUE)
   		
   		# does not work but cuts all digits
   		# TODO: why not?
