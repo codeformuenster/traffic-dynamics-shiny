@@ -307,8 +307,7 @@ shinyServer(function(input, output, session) {
   	  p <-
   	    plot_ly(data=dbData$d_hour, x = ~hour, 
   	            y = ~count,
-  	            type = "scattergl", 
-  	            mode = "lines+markers",
+  	            type = "box", 
   	            alpha = 0.1,
   	            color = ~vehicle,
   	            name = ~names(vehicle),
