@@ -56,14 +56,6 @@ shinyServer(function(input, output, session) {
   						 "'Hafenstraße'" = "'%04010%'",
   						 "'Weseler.Straße'" = "'%01190%'", # TODO add only proper directions for Kfz Kolde-Ring (i.e., only Weseler Str.)
   						 "'Hansaring'" = "'%03290%'",
-  						 # Roxel
-  						 "'roxel1'" = "'%24020%'", 
-  						 "'roxel2'" = "'%24100%'", 
-  						 "'roxel3'" = "'%24140%'", 
-  						 "'roxel4'" = "'%24010%'", 
-  						 "'roxel5'" = "'%24120%'", 
-  						 "'roxel6'" = "'%24130%'", 
-  						 "'roxel7'" = "'%24030%'"
   						 )
   	
   			dates_in_car_data <- data.frame(date = NA_character_)
@@ -167,7 +159,7 @@ shinyServer(function(input, output, session) {
     		# years
     		date_filter <- 
     			paste0(date_filter,
-  			" AND strftime('%Y', date) IN (")
+  			" AND year IN (")
     		# construct a list with quotes
     		for (yidx in 1:length(input$years)) {
     			if (yidx != length(input$years)) {
@@ -180,7 +172,7 @@ shinyServer(function(input, output, session) {
     		date_filter <- paste0(date_filter, ")")
     		
     		# months
-  			date_filter <- paste0(date_filter, " AND strftime('%m', date) IN (")
+  			date_filter <- paste0(date_filter, " AND month IN (")
 
 	    	for (midx in 1:length(input$months)) {
     			if (midx != length(input$months)) {
@@ -194,6 +186,7 @@ shinyServer(function(input, output, session) {
     		date_filter <- paste0(date_filter, ")")
   			
     		# weekday
+    		# TODO remove strftime and use weekday column (find best coding for weekday first)
   			date_filter <- paste0(date_filter, " AND strftime('%w', date) IN (")
     		for (wdidx in 1:length(input$weekdays)) {
     			if (wdidx != length(input$weekdays)) {
