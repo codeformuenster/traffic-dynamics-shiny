@@ -46,7 +46,8 @@ shinyUI(
 								min = 0,
 								max = 24,
 								value = c(0, 24)
-							)
+							),
+							actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))
 						),  # end wellPanel vehicle / location choice
 						tabsetPanel(
 							id = "tabs_time",
@@ -68,29 +69,30 @@ shinyUI(
 							tabPanel(
 								"Zeitpunkte",
 								value = "timepoints", 
-								selectInput(
+								selectizeInput(
 									"years",
                  	"Wähle Jahre:",
                  	selected = 2017,
                  	choices = list("2013", "2014", "2015", "2016", "2017"), 
-									multiple = TRUE
+									multiple = TRUE, options = list(
+									  'plugins' = list('remove_button'))
 								),
-								selectInput(
+								selectizeInput(
 									"months",
 									"Wähle Monate:",
 									selected = seq(1,12),
 									choices = monthChoices, 
-									multiple = TRUE
+									multiple = TRUE, options = list(
+									  'plugins' = list('remove_button'))
 								),
-								selectInput(
+								selectizeInput(
 									"weekdays",
 									"Wähle Wochentage:",
 									selected = seq(0,6),
 									choices = weekdayChoices, 
-									multiple = TRUE
-								),
-								actionButton("QueryBtn", "Query", icon = icon("refresh")),
-								p()
+									multiple = TRUE, options = list(
+									  'plugins' = list('remove_button'))
+								)
 							) # end tabPanel timepoints
 						) # end tabsetPanel time
 					), # end tabPanel counts

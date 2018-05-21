@@ -21,7 +21,7 @@ NullPlot <- ggplotly(
       geom = "text",
       x = 0,
       y = 0,
-      label = "No data available - please change your selection.",
+      label = "Keine Daten vorhanden - bitte ändern Sie Ihre Auswahl.",
       hjust = 0
     ) + theme_void()
 )
@@ -109,17 +109,17 @@ shinyServer(function(input, output, session) {
 					sort(unique(c(as.numeric(wday(dates_in_bike_data$date) - 1),
 												as.numeric(wday(dates_in_car_data$date) - 1))))
 				
-				updateSelectInput(session = session,
+				updateSelectizeInput(session = session,
 				                   inputId = "years",
 													 selected = isolate(input$years),
 				                   choices = years_in_data)
 				
-				updateSelectInput(session = session,
+				updateSelectizeInput(session = session,
 				                   inputId = "months",
 					 		             selected = isolate(input$months),
 				                   choices = monthChoices[monthChoices %in% months_in_data])
 				
-				updateSelectInput(session = session,
+				updateSelectizeInput(session = session,
 				                   inputId = "weekdays",
 					 		             selected = isolate(input$weekdays),
 				                   choices = weekdayChoices[weekdayChoices %in% wdays_in_data])
@@ -304,22 +304,26 @@ shinyServer(function(input, output, session) {
   	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
   	  p <- NullPlot
   	} else {
+  	  # https://help.plot.ly/what-is-a-box-plot/
+  	  # https://github.com/plotly/plotly.js/issues/2145
+  	  # library(devtools)
+  	  # install_github("ropensci/plotly")
   	  p <-
   	    plot_ly(data=dbData$d_hour, x = ~hour, 
   	            y = ~count,
   	            type = "box", 
   	            alpha = 0.1,
   	            color = ~vehicle,
-  	            name = ~names(vehicle),
-  	            hoverinfo = "text",
-  	            text = ~paste0(strftime(date, format = "%d. %m. %Y"), 
-  	                           ", ", hour, 
-  	                           " Uhr, ", vehicle,
-  	                           ": ", count)) %>%
-  	    layout(
-  	      xaxis = list(title = "Stunde"),
-  	      yaxis = list(title = "Anzahl"),
-  	      legend = list(x = 0.1, y = 0.9)
+  	            name = ~names(vehicle)
+  	    #         hoverinfo = "text",
+  	    #         text = ~paste0(strftime(date, format = "%d. %m. %Y"),
+  	    #         ", ", hour,
+  	    #         " Uhr, ", vehicle,
+  	    #         ": ", count)) %>%
+  	    # layout(
+  	    #   xaxis = list(title = "Stunde"),
+  	    #   yaxis = list(title = "Anzahl"),
+  	    #   legend = list(x = 0.1, y = 0.9))
   	    )
   	}
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
