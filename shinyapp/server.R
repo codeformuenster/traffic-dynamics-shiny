@@ -280,16 +280,17 @@ shinyServer(function(input, output, session) {
   	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
   	  p <- NullPlot
   	} else {
-  	  p <- plot_ly(data=dbData$d_year, x = ~date, 
+  	  p <- plot_ly(data=ungroup(dbData$d_year), x = ~date, 
   	               y = ~count_day, 
-  	               type = "scattergl", mode = "lines+markers",
-  	               color = ~vehicle, 
+  	               type = "scattergl",
+  	               mode = "lines+markers",
+  	               color = ~vehicle,
   	               name = ~vehicle,
   	               hoverinfo = "text",
-  	               text = ~paste0(strftime(date, format = "%d. %m. %Y"), 
+  	               text = ~paste0(strftime(date, format = "%d. %m. %Y"),
   	                              ", ", vehicle,
-  	                              ": ", count_day)) %>% 
-  	    layout(xaxis = list(title = "Datum"), 
+  	                              ": ", count_day)) %>%
+  	    layout(xaxis = list(title = "Datum"),
   	           yaxis = list(title = "Anzahl"),
   	           legend = list(x = 0.1, y = 0.9)
   	    )
@@ -304,27 +305,16 @@ shinyServer(function(input, output, session) {
   	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
   	  p <- NullPlot
   	} else {
-  	  # https://help.plot.ly/what-is-a-box-plot/
-  	  # https://github.com/plotly/plotly.js/issues/2145
-  	  # library(devtools)
-  	  # install_github("ropensci/plotly")
-  	  p <-
-  	    plot_ly(data=dbData$d_hour, x = ~hour, 
-  	            y = ~count,
-  	            type = "box", 
-  	            alpha = 0.1,
-  	            color = ~vehicle,
-  	            name = ~names(vehicle)
-  	    #         hoverinfo = "text",
-  	    #         text = ~paste0(strftime(date, format = "%d. %m. %Y"),
-  	    #         ", ", hour,
-  	    #         " Uhr, ", vehicle,
-  	    #         ": ", count)) %>%
-  	    # layout(
-  	    #   xaxis = list(title = "Stunde"),
-  	    #   yaxis = list(title = "Anzahl"),
-  	    #   legend = list(x = 0.1, y = 0.9))
-  	    )
+  	  p <- plot_ly(data=dbData$d_hour, x = ~hour, 
+  	               y = ~count,
+  	               type = "box", 
+  	               alpha = 0.1,
+  	               color = ~vehicle,
+  	               name = ~names(vehicle)
+  	  ) %>%
+  	    layout(
+  	      xaxis = list(title = "Stunde"),
+  	      yaxis = list(title = "Anzahl"))
   	}
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
