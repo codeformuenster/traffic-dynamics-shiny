@@ -44,15 +44,18 @@ shinyServer(function(input, output, session) {
 		} 
 	}) 
 	
-  # Return the formula text for printing as a caption
-  output$caption <- 
-    renderText({
-      paste0(names(locationChoices[locationChoices == input$location]),
-             ": Anzahl ",
-             names(vehicleChoices[vehicleChoices == input$vehicle]),
-             " (nicht angezeigte Daten existieren leider nicht)")
-    })
-
+	# Return the formula text for printing as a caption
+	cap <- eventReactive(input$QueryBtn, ignoreNULL = FALSE, {
+	  paste0(names(locationChoices[locationChoices == input$location]),
+	         ": Anzahl ",
+	         names(vehicleChoices[vehicleChoices == input$vehicle]),
+	         " (nicht angezeigte Daten existieren leider nicht)")
+	})
+	
+	output$caption <- renderText({
+	  cap()
+	})
+	
     observe({
   		# only show filtering option relevant for the current data
     	
@@ -292,7 +295,7 @@ shinyServer(function(input, output, session) {
   	                              ": ", count_day)) %>%
   	    layout(xaxis = list(title = "Datum"),
   	           yaxis = list(title = "Anzahl"),
-  	           legend = list(x = 0.1, y = 0.9)
+  	           showlegend = TRUE
   	    )
   	}
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
@@ -314,7 +317,9 @@ shinyServer(function(input, output, session) {
   	  ) %>%
   	    layout(
   	      xaxis = list(title = "Stunde"),
-  	      yaxis = list(title = "Anzahl"))
+  	      yaxis = list(title = "Anzahl"),
+  	      showlegend = TRUE
+  	      )
   	}
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)

@@ -18,7 +18,7 @@ options("spinner.type" = 4)
 shinyUI(
 	fluidPage(
 		title = "Anzahl Fahrzeuge in Münster", 
-		fluidRow(h4(textOutput("caption"))),
+		fluidRow(column(12, h4(textOutput("caption", inline=TRUE)))),
     fluidRow(
 			column(
 				3,
