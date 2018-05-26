@@ -187,7 +187,7 @@ shinyServer(function(input, output, session) {
   			
     		# weekday
     		# TODO remove strftime and use weekday column (find best coding for weekday first)
-  			date_filter <- paste0(date_filter, " AND strftime('%w', date) IN (")
+  			date_filter <- paste0(date_filter, " AND weekday IN (")
     		for (wdidx in 1:length(input$weekdays)) {
     			if (wdidx != length(input$weekdays)) {
     				date_filter <- paste0(date_filter, "'" , input$weekdays[wdidx], "',")
