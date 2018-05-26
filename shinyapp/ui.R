@@ -18,7 +18,7 @@ options("spinner.type" = 4)
 shinyUI(
 	fluidPage(
 		title = "Anzahl Fahrzeuge in Münster", 
-		fluidRow(h4(textOutput("caption"))),
+		fluidRow(column(12, h4(textOutput("caption", inline=TRUE)))),
     fluidRow(
 			column(
 				3,
@@ -46,7 +46,8 @@ shinyUI(
 								min = 0,
 								max = 24,
 								value = c(0, 24)
-							)
+							),
+							actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))
 						),  # end wellPanel vehicle / location choice
 						tabsetPanel(
 							id = "tabs_time",
@@ -68,26 +69,29 @@ shinyUI(
 							tabPanel(
 								"Zeitpunkte",
 								value = "timepoints", 
-								checkboxGroupInput(
+								selectizeInput(
 									"years",
                  	"Wähle Jahre:",
-                 	inline = TRUE,
                  	selected = 2017,
-                 	choices = list("2013", "2014", "2015", "2016", "2017")
+                 	choices = list("2013", "2014", "2015", "2016", "2017"), 
+									multiple = TRUE, options = list(
+									  'plugins' = list('remove_button'))
 								),
-								checkboxGroupInput(
+								selectizeInput(
 									"months",
 									"Wähle Monate:",
-									inline = TRUE,
 									selected = seq(1,12),
-									choices = monthChoices
+									choices = monthChoices, 
+									multiple = TRUE, options = list(
+									  'plugins' = list('remove_button'))
 								),
-						 		checkboxGroupInput(
+								selectizeInput(
 									"weekdays",
 									"Wähle Wochentage:",
-									inline = TRUE,
 									selected = seq(0,6),
-									choices = weekdayChoices
+									choices = weekdayChoices, 
+									multiple = TRUE, options = list(
+									  'plugins' = list('remove_button'))
 								)
 							) # end tabPanel timepoints
 						) # end tabsetPanel time
