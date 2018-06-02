@@ -47,7 +47,12 @@ shinyUI(
 								max = 24,
 								value = c(0, 24)
 							),
-							fluidRow(column(6, align="center", offset = 3, actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))))
+							fluidRow(
+								column(12, 
+								       align="center", 
+								       actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))
+								      )
+							)
 						),  # end wellPanel vehicle / location choice
 						tabsetPanel(
 							id = "tabs_time",
