@@ -1,4 +1,4 @@
-FROM codeformuenster/traffic-dynamics:v0.3.10
+FROM codeformuenster/traffic-dynamics:v0.3.11
 
 COPY ./shinyapp /srv/shiny-server/
 

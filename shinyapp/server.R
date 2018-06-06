@@ -7,7 +7,7 @@
 
 # load libraries ####
 # use 00_install_R_packages.R for installing missing packages
-lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2", "lubridate", "plotly"), 
+lapply(c("shiny", "datasets", "RSQLite", "dplyr", "ggplot2", "lubridate", "plotly", "brms"), 
        require, character.only = TRUE)
 
 source("global.R")
@@ -33,6 +33,9 @@ shinyServer(function(input, output, session) {
   
   dbData <- reactiveValues(d_hour=NULL, d_year=NULL)
 
+  # load statistical models
+  load("models/bike_model_simple.RData")
+  
 	# open connection to database
 	con <- dbConnect(SQLite(), dbname = "data/database/traffic_data.sqlite")
 		
@@ -45,11 +48,16 @@ shinyServer(function(input, output, session) {
 	}) 
 	
 	# Return the formula text for printing as a caption
-	cap <- eventReactive(input$QueryBtn, ignoreNULL = FALSE, {
-	  paste0(names(locationChoices[locationChoices == input$location]),
-	         ": Anzahl ",
-	         names(vehicleChoices[vehicleChoices == input$vehicle]),
-	         " (nicht angezeigte Daten existieren leider nicht)")
+	cap <- reactive({
+	  if(input$tabs_data_models == "data"){
+  	  paste0(names(locationChoices[locationChoices == input$location]),
+  	         ": Anzahl ",
+  	         names(vehicleChoices[vehicleChoices == input$vehicle]),
+  	         " (nicht angezeigte Daten existieren leider nicht)")
+	  } else {
+	    paste0(names(locationChoices[locationChoices == input$location]),
+	           ", Fahrräder, Werktage 2017, Modellschätzungen")
+	  }
 	})
 	
 	output$caption <- renderText({
@@ -73,7 +81,7 @@ shinyServer(function(input, output, session) {
 						 "'Warendorfer.Straße'" = "'%04061%'",
 						 "'Hafenstraße'" = "'%04010%'",
 						 "'Weseler.Straße'" = "'%01190%'", # TODO add only proper directions for Kfz Kolde-Ring (i.e., only Weseler Str.)
-						 "'Hansaring'" = "'%03290%'",
+						 "'Hansaring'" = "'%03290%'"
 						 )
 	
 			dates_in_car_data <- data.frame(date = NA_character_)
@@ -322,43 +330,166 @@ shinyServer(function(input, output, session) {
   
   output$stringCounts <-
   	renderText({
-  		# TODO: dplyr this ... (some say its easier to read :P)
-
-  	  req(dbData$d_year)
-  	  req(dbData$d_hour)
   	  
-  		all_bikes <- sum(dbData$d_year[dbData$d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
-  		mean_bikes_year <- mean(dbData$d_year[dbData$d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
-  		mean_bikes_hour <- mean(dbData$d_hour[dbData$d_hour$vehicle == "Fahrrad", ]$count, na.rm = TRUE)
-  		
-  		all_cars <- sum(dbData$d_year[dbData$d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
-  		mean_cars_year <- mean(dbData$d_year[dbData$d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
-  		mean_cars_hour <- mean(dbData$d_hour[dbData$d_hour$vehicle == "Kfz", ]$count, na.rm = TRUE)
-  		
-  		# does not work but cuts all digits
-  		# TODO: why not?
-  		# options(digits = 2)
-  		
-  		count_string <- 
-  			paste0("Im gewählten Zeitraum:\nGesamtanzahl Fahrräder: ", 
-  					 prettyNum(all_bikes, big.mark = " ", decimal.mark = ","), 
-  					 "\nFahrräder pro Tag (Mittelwert): ",
-  					 prettyNum(mean_bikes_year, big.mark = " ", decimal.mark = ","),
-  					 "\nFahrräder pro Stunde (Mittelwert): ",
-  					 prettyNum(mean_bikes_hour, big.mark = " ", decimal.mark = ","),
-  					 "\nGesamtanzahl Kfz: ", 
-  					 prettyNum(all_cars, big.mark = " ", decimal.mark = ","), 
-  					 "\nKfz pro Tag (Mittelwert): ",
-  					 prettyNum(mean_cars_year, big.mark = " ", decimal.mark = ","),
-  					"\nKfz pro Stunde (Mittelwert): ",
-  					 prettyNum(mean_cars_hour, big.mark = " ", decimal.mark = ","),
-  					"\ngeschätzter CO2-Ausstoß pro Tag: ",
-  					"Fahrrad: 0, Kfz: TODO",
-  					"\ngeschätzter Stickstoff-Ausstoß pro Tag: ",
-  					"Fahrrad: 0, Kfz: TODO",
-  					"\ngeschätzter Platzverbrauch pro bewegtem Mensch am Tag: ",
-  					"\n\tFahrrad: Radwegbreite [TODO] / ", mean_bikes_year,
-  					"\n\tKfz: Fahrbahnbreite [TODO] /  (", mean_cars_year, " * durchschnittliche Anzahl Personen im Auto [TODO])")
-  		return(count_string)
+  	  if(input$tabs_data_models == "data"){
+    		# TODO: dplyr this ... (some say its easier to read :P)
+  
+    	  req(dbData$d_year)
+    	  req(dbData$d_hour)
+    	  
+    		all_bikes <- sum(dbData$d_year[dbData$d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
+    		mean_bikes_year <- mean(dbData$d_year[dbData$d_year$vehicle == "Fahrrad", ]$count_day, na.rm = TRUE)
+    		mean_bikes_hour <- mean(dbData$d_hour[dbData$d_hour$vehicle == "Fahrrad", ]$count, na.rm = TRUE)
+    		
+    		all_cars <- sum(dbData$d_year[dbData$d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
+    		mean_cars_year <- mean(dbData$d_year[dbData$d_year$vehicle == "Kfz", ]$count_day, na.rm = TRUE)
+    		mean_cars_hour <- mean(dbData$d_hour[dbData$d_hour$vehicle == "Kfz", ]$count, na.rm = TRUE)
+    		
+    		# does not work but cuts all digits
+    		# TODO: why not?
+    		# options(digits = 2)
+    		
+    		count_string <- 
+    			paste0("Im gewählten Zeitraum:\nGesamtanzahl Fahrräder: ", 
+    					 prettyNum(all_bikes, big.mark = " ", decimal.mark = ","), 
+    					 "\nFahrräder pro Tag (Mittelwert): ",
+    					 prettyNum(mean_bikes_year, big.mark = " ", decimal.mark = ","),
+    					 "\nFahrräder pro Stunde (Mittelwert): ",
+    					 prettyNum(mean_bikes_hour, big.mark = " ", decimal.mark = ","),
+    					 "\nGesamtanzahl Kfz: ", 
+    					 prettyNum(all_cars, big.mark = " ", decimal.mark = ","), 
+    					 "\nKfz pro Tag (Mittelwert): ",
+    					 prettyNum(mean_cars_year, big.mark = " ", decimal.mark = ","),
+    					"\nKfz pro Stunde (Mittelwert): ",
+    					 prettyNum(mean_cars_hour, big.mark = " ", decimal.mark = ","),
+    					"\ngeschätzter CO2-Ausstoß pro Tag: ",
+    					"Fahrrad: 0, Kfz: TODO",
+    					"\ngeschätzter Stickstoff-Ausstoß pro Tag: ",
+    					"Fahrrad: 0, Kfz: TODO",
+    					"\ngeschätzter Platzverbrauch pro bewegtem Mensch am Tag: ",
+    					"\n\tFahrrad: Radwegbreite [TODO] / ", mean_bikes_year,
+    					"\n\tKfz: Fahrbahnbreite [TODO] /  (", mean_cars_year, " * durchschnittliche Anzahl Personen im Auto [TODO])")
+    		return(count_string)
+  	  }
   	})
+  
+  ## model plots
+  
+  baldPlot <- ggplotly(
+    ggplot(NULL) +
+      annotate(
+        geom = "text",
+        x = 0,
+        y = 0,
+        label = "Bald™.",
+        hjust = 0
+      ) + theme_void()
+    )
+  
+  output$plotTemperature <- renderPlotly({
+    if(input$select_model == "simple"){
+      model <- neutor_werktage_2017_bikes_simple
+    } else {
+      # model <- neutor_werktage_2017_bikes_complex
+      return(baldPlot)
+    }
+    
+    p <- plot(
+        marginal_effects(model,
+                       effects = "temperature",
+                       probs = c(0.05, 0.95),
+                       plot = FALSE)
+      )[[1]] + 
+      xlab("Temperatur (in °C)") +
+      ylab("Anzahl Fahrräder") +
+      theme_minimal()
+    
+    ggplotly(p)
+  })
+  
+  output$plotWind <- renderPlotly({
+    if(input$select_model == "simple"){
+      model <- neutor_werktage_2017_bikes_simple
+    } else {
+      # model <- neutor_werktage_2017_bikes_complex
+      return(baldPlot)
+    }
+    
+    p <- plot(
+      marginal_effects(model,
+                       effects = "windspeed",
+                       probs = c(0.05, 0.95),
+                       plot = FALSE)
+    )[[1]] + 
+      xlab("Windgeschwindigkeit (km/h)") +
+      ylab("Anzahl Fahrräder") +
+      theme_minimal()
+    
+    ggplotly(p)
+  })
+  
+  output$plotRain <- renderPlotly({
+    if(input$select_model == "simple"){
+      model <- neutor_werktage_2017_bikes_simple
+    } else {
+      # model <- neutor_werktage_2017_bikes_complex
+      return(baldPlot)
+    }
+    
+    p <- plot(
+      marginal_effects(model,
+                       effects = "rain",
+                       probs = c(0.05, 0.95),
+                       plot = FALSE)
+    )[[1]] + 
+      xlab("Regen") +
+      ylab("Anzahl Fahrräder") +
+      theme_minimal()
+    
+    ggplotly(p)
+  })
+  
+  output$plotMonth <- renderPlotly({
+    if(input$select_model == "simple"){
+      model <- neutor_werktage_2017_bikes_simple
+    } else {
+      # model <- neutor_werktage_2017_bikes_complex
+      return(baldPlot)
+    }
+    
+    p <- plot(
+      marginal_effects(model,
+                       effects = "month",
+                       probs = c(0.05, 0.95),
+                       plot = FALSE)
+    )[[1]] + 
+      xlab("Monat") +
+      ylab("Anzahl Fahrräder") +
+      theme_minimal()
+    
+    ggplotly(p)
+  })
+  
+  output$plotWeekday <- renderPlotly({
+    if(input$select_model == "simple"){
+      model <- neutor_werktage_2017_bikes_simple
+    } else {
+      # model <- neutor_werktage_2017_bikes_complex
+      return(baldPlot)
+    }
+    
+    p <- plot(
+      marginal_effects(model,
+                       effects = "weekday",
+                      probs = c(0.05, 0.95),
+                       plot = FALSE)
+    )[[1]] +
+      xlab("Wochentag") +
+      ylab("Anzahl Fahrräder") +
+      theme_minimal()
+
+    ggplotly(p)
+  })
+  
+  
 })

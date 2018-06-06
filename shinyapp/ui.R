@@ -23,7 +23,7 @@ shinyUI(
 			column(
 				3,
 				tabsetPanel(
-					id = "tabs_counts_models",
+					id = "tabs_data_models",
 					tabPanel(
 						"Zähldaten",
 						value = "data",
@@ -47,8 +47,13 @@ shinyUI(
 								max = 24,
 								value = c(0, 24)
 							),
-							actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))
-						),  # end wellPanel vehicle / location choice
+							fluidRow(
+							  column(12, 
+							         align="center", 
+							         actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))
+							         )
+							  )
+							),  # end wellPanel vehicle / location choice
 						tabsetPanel(
 							id = "tabs_time",
 							selected = "timepoints",
@@ -99,17 +104,38 @@ shinyUI(
 					tabPanel(
 						"Modelle",
 						value = "models",
-						print("Bald™ lassen sich hier statistische Modelle auswählen.")
+						radioButtons("select_model",
+						             "Wähle ein Modell:",
+						             choices = c("einfach" = "simple", "komplex" = "complex"),
+						            selected = "simple"),
+						print("Neutor, Fahrräder, Werktage 2017. Linien/Punkte sind wahrscheinlichste Modellschätzungen, die mit 95% Wahrscheinlichkeit auch in den schattierte Bereiche/Fehlerbalken liegen könnten.")
 					) # end tabPanel models
 				) # end tabsetPanel counts / models
 			), # end column counts / models
-			column(
-				5,
-				withSpinner(plotlyOutput("plotYear"))
-  		),
-			column(
-				4,
-				withSpinner(plotlyOutput("plotDay"))
+			conditionalPanel(
+			  condition = "input.tabs_data_models == 'data'",
+  			column(
+  				5,
+  				withSpinner(plotlyOutput("plotYear"))
+    		),
+  			column(
+  				4,
+  				withSpinner(plotlyOutput("plotDay"))
+  			)
+			),
+			conditionalPanel(
+			  condition = "input.tabs_data_models == 'models'",
+			  column(
+			    5,
+			    withSpinner(plotlyOutput("plotTemperature")),
+			    withSpinner(plotlyOutput("plotMonth")),
+			    withSpinner(plotlyOutput("plotWeekday"))
+			  ),
+			  column(
+			    4,
+			    withSpinner(plotlyOutput("plotWind")),
+			    withSpinner(plotlyOutput("plotRain"))
+			  )
 			)
 		), # end fluid row that contains almost everything
 		fluidRow(
