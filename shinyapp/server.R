@@ -394,6 +394,7 @@ shinyServer(function(input, output, session) {
       return(baldPlot)
     }
     
+    pdf(NULL)
     p <- plot(
         marginal_effects(model,
                        effects = "temperature",
@@ -415,6 +416,7 @@ shinyServer(function(input, output, session) {
       return(baldPlot)
     }
     
+    pdf(NULL)
     p <- plot(
       marginal_effects(model,
                        effects = "windspeed",
@@ -436,6 +438,7 @@ shinyServer(function(input, output, session) {
       return(baldPlot)
     }
     
+    pdf(NULL)
     p <- plot(
       marginal_effects(model,
                        effects = "rain",
@@ -457,6 +460,7 @@ shinyServer(function(input, output, session) {
       return(baldPlot)
     }
     
+    pdf(NULL)
     p <- plot(
       marginal_effects(model,
                        effects = "month",
@@ -478,6 +482,7 @@ shinyServer(function(input, output, session) {
       return(baldPlot)
     }
     
+    pdf(NULL)
     p <- plot(
       marginal_effects(model,
                        effects = "weekday",
