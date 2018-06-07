@@ -56,7 +56,7 @@ shinyServer(function(input, output, session) {
   	         " (nicht angezeigte Daten existieren leider nicht)")
 	  } else {
 	    paste0(names(locationChoices[locationChoices == input$location]),
-	           ", Fahrräder, Werktage 2017, Modellschätzungen")
+	           ", Fahrräder, Werktage 2017, 7:00–8:59 Uhr, Modellschätzungen")
 	  }
 	})
 	

@@ -108,7 +108,7 @@ shinyUI(
 						             "Wähle ein Modell:",
 						             choices = c("einfach" = "simple", "komplex" = "complex"),
 						            selected = "simple"),
-						print("Neutor, Fahrräder, beide Richtungen, Werktage 2017. Linien/Punkte sind wahrscheinlichste Modellschätzungen, die mit 95% Wahrscheinlichkeit auch in den schattierten Bereichen/Fehlerbalken liegen könnten.")
+						print("Neutor, Fahrräder, beide Richtungen, Werktage 2017, zwischen 7:00 und 8:59 Uhr. Linien/Punkte sind wahrscheinlichste Modellschätzungen, die mit 95% Wahrscheinlichkeit auch in den schattierten Bereichen/Fehlerbalken liegen könnten.")
 					) # end tabPanel models
 				) # end tabsetPanel counts / models
 			), # end column counts / models
