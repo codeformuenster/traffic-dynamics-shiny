@@ -398,11 +398,10 @@ shinyServer(function(input, output, session) {
     p <- plot(
         marginal_effects(model,
                        effects = "temperature",
-                       probs = c(0.05, 0.95),
                        plot = FALSE)
       )[[1]] + 
       xlab("Temperatur (in °C)") +
-      ylab("Anzahl Fahrräder") +
+      ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
     ggplotly(p)
@@ -420,11 +419,10 @@ shinyServer(function(input, output, session) {
     p <- plot(
       marginal_effects(model,
                        effects = "windspeed",
-                       probs = c(0.05, 0.95),
                        plot = FALSE)
     )[[1]] + 
       xlab("Windgeschwindigkeit (km/h)") +
-      ylab("Anzahl Fahrräder") +
+      ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
     ggplotly(p)
@@ -442,11 +440,10 @@ shinyServer(function(input, output, session) {
     p <- plot(
       marginal_effects(model,
                        effects = "rain",
-                       probs = c(0.05, 0.95),
                        plot = FALSE)
     )[[1]] + 
       xlab("Regen") +
-      ylab("Anzahl Fahrräder") +
+      ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
     ggplotly(p)
@@ -464,11 +461,10 @@ shinyServer(function(input, output, session) {
     p <- plot(
       marginal_effects(model,
                        effects = "month",
-                       probs = c(0.05, 0.95),
                        plot = FALSE)
     )[[1]] + 
       xlab("Monat") +
-      ylab("Anzahl Fahrräder") +
+      ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
     ggplotly(p)
@@ -486,11 +482,10 @@ shinyServer(function(input, output, session) {
     p <- plot(
       marginal_effects(model,
                        effects = "weekday",
-                      probs = c(0.05, 0.95),
                        plot = FALSE)
     )[[1]] +
       xlab("Wochentag") +
-      ylab("Anzahl Fahrräder") +
+      ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
 
     ggplotly(p)
