@@ -32,7 +32,7 @@ sudo docker run --rm -p 3838:3838 traffic-dynamics-local
 
 Alternatively, you can download and run the docker image from the docker cloud:
 ```
-sudo docker run --rm -p 3838:3838 codeformuenster/traffic-dynamics-shiny:latest
+sudo docker run --rm -p 3838:3838 codeformuenster/traffic-dynamics-shiny:v0.5.1.3
 ```
 
 Afterwards, point your browser to [localhost:3838](localhost:3838).
