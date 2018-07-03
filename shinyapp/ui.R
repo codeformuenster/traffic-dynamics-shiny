@@ -7,7 +7,7 @@
 
 # load libraries ####
 # use 00_install_R_packages.R for installing missing packages
-lapply(c("shiny", "shinycssloaders", "plotly"),
+lapply(c("shiny", "shinycssloaders", "plotly", "leaflet"),
 			 require, character.only = TRUE)
 
 source("global.R")
@@ -24,6 +24,10 @@ shinyUI(
 				3,
 				tabsetPanel(
 					id = "tabs_data_models",
+					tabPanel(
+						"Karte",
+						leafletOutput("countermap")
+					),
 					tabPanel(
 						"Zähldaten",
 						value = "data",

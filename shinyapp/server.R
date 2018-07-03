@@ -31,7 +31,7 @@ shinyServer(function(input, output, session) {
   
   options(warn = -1) # suppress warnings
   
-  dbData <- reactiveValues(d_hour=NULL, d_year=NULL)
+  dbData <- reactiveValues(d_hour = NULL, d_year = NULL)
 
   # load statistical models
   load("models/bike_model_simple.RData")
@@ -49,7 +49,7 @@ shinyServer(function(input, output, session) {
 	
 	# Return the formula text for printing as a caption
 	cap <- reactive({
-	  if(input$tabs_data_models == "data"){
+	  if (input$tabs_data_models == "data") {
   	  paste0(names(locationChoices[locationChoices == input$location]),
   	         ": Anzahl ",
   	         names(vehicleChoices[vehicleChoices == input$vehicle]),
@@ -62,6 +62,23 @@ shinyServer(function(input, output, session) {
 	
 	output$caption <- renderText({
 	  cap()
+	})
+	
+	output$countermap <- renderLeaflet({
+
+		# TODO move to proper place
+		coordinates <- read.csv("data/raw/coordinates.csv")
+		
+		map <- leaflet(data = coordinates) %>%
+		  addTiles() %>%  # Add default OpenStreetMap map tiles
+		  addMarkers(
+		  	lat = ~latitude, 
+		  	lng = ~longitude,
+		  	# color = ~type,
+		  	# doesn't work with Markers https://stackoverflow.com/questions/32940617/change-color-of-leaflet-marker
+		  	popup = paste0(coordinates$type, coordinates$name))
+		
+		map  # Print the map
 	})
 	
   observe({
