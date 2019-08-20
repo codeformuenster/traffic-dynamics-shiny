@@ -172,5 +172,6 @@ shinyUI(
   		  )
 		  ) # end tabset
     ) # end footer fluid row
+  , includeScript("fathom.js")
   ) # end fluidPage
 ) # end shinyUI
