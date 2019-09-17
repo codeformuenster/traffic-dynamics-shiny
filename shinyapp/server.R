@@ -31,7 +31,7 @@ shinyServer(function(input, output, session) {
   
   options(warn = -1) # suppress warnings
   
-  dbData <- reactiveValues(d_hour=NULL, d_year=NULL)
+  dbData <- reactiveValues(d_hour = NULL, d_year = NULL)
 
   # load statistical models
   load("models/bike_model_simple.RData")
@@ -136,7 +136,7 @@ shinyServer(function(input, output, session) {
 				 	)
 	})
 	
-  load_filtered_data_from_db <- eventReactive(input$QueryBtn, ignoreNULL=FALSE, {
+  load_filtered_data_from_db <- eventReactive(input$QueryBtn, ignoreNULL = FALSE, {
     	start <- Sys.time()
     	
     	req(con)
@@ -247,7 +247,7 @@ shinyServer(function(input, output, session) {
 		# sql_string <- "SELECT date, hour, count, location, vehicle FROM bikes WHERE hour >= 0 AND hour <= 24 AND year IN ('2017') AND month IN ('01','02','03','04','05','06','07','08','09','10','11','12') AND weekday IN ('1','2','3','4','5','6','0') AND location LIKE 'Neutor'"
 		
 		vehicles <- dbGetQuery(conn = con, sql_string) %>% 
-			mutate(date = as.POSIXct(date)) %>% 
+			mutate(date = as.POSIXct(date)) %>%
 			mutate(vehicle = factor(vehicle, levels = c("bike", "car"), 
 															labels = c("Fahrrad", "Kfz")))
 		
@@ -277,13 +277,14 @@ shinyServer(function(input, output, session) {
  	observe({
  	  dbData$d_year <- aggregated_data_year()
  	})
+
  	
  	output$plotYear <- renderPlotly({
   	start <- Sys.time()
-  	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
+  	if (is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0) {
   	  p <- NullPlot
   	} else {
-  	  p <- plot_ly(data=dbData$d_year,
+  	  p <- plot_ly(data = dbData$d_year,
   	               x = ~date, 
   	               y = ~count_day, 
   	               type = "scattergl",
@@ -306,16 +307,16 @@ shinyServer(function(input, output, session) {
   
   output$plotDay <- renderPlotly({
   	start <- Sys.time()
-  	if(is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0){
+  	if (is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0) {
   	  p <- NullPlot
   	} else {
-  	  p <- plot_ly(data=dbData$d_hour,
+  	  p <- plot_ly(data = dbData$d_hour,
   	               x = ~hour, 
   	               y = ~count,
   	               type = "box", 
   	               alpha = 0.1,
   	               color = ~vehicle,
-  	               name = ~names(vehicle)
+  	               name = ~vehicle
   	  ) %>%
   	    layout(
   	      xaxis = list(title = "Stunde"),
@@ -327,11 +328,120 @@ shinyServer(function(input, output, session) {
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
+
+  aggregated_data_radar_year <- reactive({
+ 	  req(dbData$d_hour)
+ 		start <- Sys.time()
+ 		vehicles_radar <-
+ 		  dbData$d_hour %>%
+ 			group_by(month(date), vehicle) %>%
+ 			summarise(count_month = sum(count, na.rm = TRUE)) %>% 
+ 		  ungroup()
+	    cat(paste("aggregated_data_year_radar() took", Sys.time() - start, "seconds\n"))
+
+    return(vehicles_radar)
+  })
+  
+  output$plotRadarYear <- renderPlotly({
+    
+    bikes <- aggregated_data_radar_year() %>% 
+      filter(vehicle == "Fahrrad")
+    
+    cars <- aggregated_data_radar_year() %>% 
+      filter(vehicle == "Kfz")
+    
+    if (nrow(bikes) == 0) {
+      bikes <- data.frame(count_month = rep(NA, 12),
+                         month = seq(1, 12),
+                         vehicle = rep("Fahrrad", 12))
+    }
+
+    if (nrow(cars) == 0) {
+      cars <- data.frame(count_month = rep(NA, 12),
+                         month = seq(1, 12),
+                         vehicle = rep("Kfz", 12))
+      print(cars)
+    }
+
+
+    p <- plot_ly(
+      type = 'scatterpolar',
+      fill = 'toself'
+    ) %>% 
+      add_trace(data = bikes,
+        r = ~count_month,
+        theta = c('Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
+        name = ~vehicle) %>%
+      add_trace(data = cars,
+        r = ~count_month,
+        theta = c('Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun',
+                  'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
+        name = ~vehicle) %>%
+      layout(
+      polar = list(
+        radialaxis = list(
+          visible = T,
+          range = c(0, max(bikes$count_month, cars$count_month))
+        )
+      )
+    )
+    
+    return(p)
+  })
+  
+  output$plotRadarDay <- renderPlotly({
+
+    # bikes <- aggregated_data_radar_day() %>%
+    #   filter(vehicle == "Fahrrad")
+    # 
+    # cars <- aggregated_data_radar_day() %>%
+    #   filter(vehicle == "Kfz")
+    # 
+    # if (nrow(cars) == 0) {
+    #   cars <- data.frame(count_month = rep(0, 12),
+    #                      month = seq(1, 12),
+    #                      vehicle = rep("Kfz", 12))
+    #   print(cars)
+    # }
+    # 
+    # p <- plot_ly(data = aggregated_data_radar(),
+    #   type = 'scatterpolar',
+    #   fill = 'toself'
+    # ) %>%
+    #   add_trace(data = bikes,
+    #     r = ~count_month,
+    #     theta = c('Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun',
+    #               'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
+    #     name = ~vehicle) %>%
+    #   add_trace(data = cars,
+    #     r = ~count_month,
+    #     theta = c('Jan', 'Feb', 'Mrz', 'Apr', 'Mai', 'Jun',
+    #               'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
+    #     name = ~vehicle) %>%
+    #   layout(
+    #   polar = list(
+    #     radialaxis = list(
+    #       visible = T,
+    #       range = c(0, max(bikes$count_hour, cars$count_hour))
+    #     )
+    #   )
+    # )
+
+        p <- plot_ly(
+      type = 'scatterpolar',
+      fill = 'toself'
+    ) %>% add_trace(# data = bikes,
+      r = seq(1, 24),
+      theta = seq(1, 24),
+      name = "kommt bald")
+    return(p)
+  })
   
   output$stringCounts <-
   	renderText({
   	  
-  	  if(input$tabs_data_models == "data"){
+  	  if (input$tabs_data_models == "data") {
     		# TODO: dplyr this ... (some say its easier to read :P)
   
     	  req(dbData$d_year)
@@ -450,7 +560,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotMonth <- renderPlotly({
-    if(input$select_model == "simple"){
+    if (input$select_model == "simple") {
       model <- neutor_werktage_2017_bikes_simple
     } else {
       # model <- neutor_werktage_2017_bikes_complex
@@ -471,7 +581,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotWeekday <- renderPlotly({
-    if(input$select_model == "simple"){
+    if (input$select_model == "simple") {
       model <- neutor_werktage_2017_bikes_simple
     } else {
       # model <- neutor_werktage_2017_bikes_complex

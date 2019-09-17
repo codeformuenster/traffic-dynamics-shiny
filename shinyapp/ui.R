@@ -116,11 +116,13 @@ shinyUI(
 			  condition = "input.tabs_data_models == 'data'",
   			column(
   				5,
-  				withSpinner(plotlyOutput("plotYear"))
+  				withSpinner(plotlyOutput("plotYear")),
+  				withSpinner(plotlyOutput("plotRadarYear"))
     		),
   			column(
   				4,
-  				withSpinner(plotlyOutput("plotDay"))
+  				withSpinner(plotlyOutput("plotDay")),
+  				withSpinner(plotlyOutput("plotRadarDay"))
   			)
 			),
 			conditionalPanel(
