@@ -18,10 +18,10 @@ options("spinner.type" = 4)
 shinyUI(
 	fluidPage(
 		title = "Anzahl Fahrzeuge in Münster", 
-		fluidRow(column(12, h4(textOutput("caption", inline=TRUE)))),
+		fluidRow(column(12, h4(textOutput("caption", inline = TRUE)))),
     fluidRow(
 			column(
-				3,
+				2,
 				tabsetPanel(
 					id = "tabs_data_models",
 					tabPanel(
@@ -49,7 +49,7 @@ shinyUI(
 							),
 							fluidRow(
 								column(12, 
-								       align="center", 
+								       align = "center",
 								       actionButton("QueryBtn", "Aktualisieren", icon = icon("refresh"))
 								      )
 							)
@@ -77,8 +77,8 @@ shinyUI(
 								selectizeInput(
 									"years",
                  	"Wähle Jahre:",
-                 	selected = 2017,
-                 	choices = list("2013", "2014", "2015", "2016", "2017"), 
+                 	selected = 2018,
+                 	choices = list("2013", "2014", "2015", "2016", "2017", "2018", "2019"),
 									multiple = TRUE, options = list(
 									  'plugins' = list('remove_button'))
 								),
@@ -116,12 +116,17 @@ shinyUI(
 			  condition = "input.tabs_data_models == 'data'",
   			column(
   				5,
+  				h4("Summe pro Tag:"),
   				withSpinner(plotlyOutput("plotYear")),
-  				withSpinner(plotlyOutput("plotRadarYear"))
+  				h4("Summe pro Monat:"),
+  				withSpinner(plotlyOutput("plotRadarYear")),
+  				p("Jahres-Netzdiagramm wenig sinnvoll, wenn Daten nicht ganze Jahre umfassen")
     		),
   			column(
-  				4,
+  				5,
+  				h4("Durchschnitt pro Stunde:"),
   				withSpinner(plotlyOutput("plotDay")),
+  				h4("Summe pro Stunde:"),
   				withSpinner(plotlyOutput("plotRadarDay"))
   			)
 			),
@@ -161,7 +166,7 @@ shinyUI(
     				a("Ideen und Feedback willkommen!", 
     					href = "https://github.com/codeformuenster/traffic-dynamics-shiny/issues"),
     				HTML("<br>"),
-    				print("Datenquelle: Stadt Münster (lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0)"),
+    				print("Datenquelle: Stadt Münster (Daten bis 2017 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0; Daten ab 2017 unter keiner genauer spezifizierten Lizenz; Fahrraddaten ab 2019 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0)"),
     				HTML("<br>"),
     				a("Hier gibt es die genaue Lage der Fahrrad-Zählstellen und weitere Infos zu den Daten.",
     					href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html")
