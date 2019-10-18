@@ -4,7 +4,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 # TODO for next release
-# - link to codeformuenster impressum
 # - add proper fathom tracking
 # - color the update button, see crashes code
 # - update docker file to point to new data docker image
