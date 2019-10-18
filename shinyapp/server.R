@@ -34,6 +34,8 @@ NullPlot <- ggplotly(
 # Define server logic required to plot
 shinyServer(function(input, output, session) {
   
+  global_vars <- reactiveValues(filter_changed = FALSE, update_visible_data = TRUE)
+  
   options(warn = -1) # suppress warnings
   
   dbData <- reactiveValues(d_hour = NULL, d_year = NULL)
@@ -53,12 +55,12 @@ shinyServer(function(input, output, session) {
 	}) 
 	
 	# Return the formula text for printing as a caption
-	cap <- reactive({
+	cap <- eventReactive(global_vars$update_visible_data, {
 	  if (input$tabs_data_models == "data") {
   	  paste0(names(locationChoices[locationChoices == input$location]),
   	         ": Anzahl ",
   	         names(vehicleChoices[vehicleChoices == input$vehicle]),
-  	         " (nicht angezeigte Daten existieren leider (noch) nicht)")
+  	         " (nicht angezeigte Daten existieren leider (noch) nicht; keine Gewähr für Vollständigkeit oder Korrektheit der Daten)")
 	  } else {
 	    paste0(names(locationChoices[locationChoices == input$location]),
 	           ", Fahrräder, Werktage 2017, 7:00–8:59 Uhr, Modellschätzungen")
@@ -141,7 +143,7 @@ shinyServer(function(input, output, session) {
 				 	)
 	})
 	
-  load_filtered_data_from_db <- eventReactive(input$QueryBtn, ignoreNULL = FALSE, {
+  load_filtered_data_from_db <- eventReactive(global_vars$update_visible_data, ignoreInit = TRUE, {
     	start <- Sys.time()
     	
     	req(con)
@@ -256,6 +258,8 @@ shinyServer(function(input, output, session) {
 			mutate(vehicle = factor(vehicle, levels = c("bike", "car"), 
 															labels = c("Fahrrad", "Kfz")))
 		
+		global_vars$filter_changed <- FALSE
+		
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
@@ -264,6 +268,30 @@ shinyServer(function(input, output, session) {
 
   observe({
     dbData$d_hour <- load_filtered_data_from_db()
+  })
+  
+  # observe all filters and toggle the global variable to color the refresh button
+  observeEvent(c(input$vehicle, input$location, input$hour_range,
+                 input$date_range, input$weekdays, input$months, input$years), {
+                   global_vars$filter_changed <- TRUE
+                 })
+  
+  output$button <- renderUI({
+    if (global_vars$filter_changed) {
+      actionButton(inputId = "update_button", "Aktualisieren", icon = icon("refresh"),
+                   style = "color: white; background-color: #86D956;")
+    } else {
+      actionButton(inputId = "update_button", "Aktualisieren", icon = icon("refresh"),
+                   style = "color: black; background-color: #FFFFFF")
+    }
+  })
+  
+  # this triggers an SQL query and the display of markers and / or the heatmap
+  # via global_vars$update_visible_data (but only once for every filter change)
+  observeEvent(input$update_button, ignoreNULL = FALSE, ignoreInit = TRUE, {
+    if (global_vars$filter_changed) {
+      global_vars$update_visible_data <- !global_vars$update_visible_data
+    }
   })
   
  	aggregated_data_year <- reactive({
