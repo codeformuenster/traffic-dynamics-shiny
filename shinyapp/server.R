@@ -3,11 +3,6 @@
 # along with this program (file COPYING).
 # If not, see <http://www.gnu.org/licenses/>.
 
-# TODO for next release
-# - add proper fathom tracking
-# - color the update button, see crashes code
-# - update docker file to point to new data docker image
-
 # SERVER LOGIC FOR THE SHINY APP
 
 # load libraries ####
@@ -72,7 +67,7 @@ shinyServer(function(input, output, session) {
 	})
 	
   observe({
-		# only show filtering option relevant for the current data
+		# only show filtering options (i.e., time range) relevant for the current data
   	
   	req(con)
 		
@@ -158,20 +153,13 @@ shinyServer(function(input, output, session) {
   						 "'Wolbecker.Straße'" = "'%04050%'",
   						 "'Hüfferstraße'" = "'%03052%'",
   						 "'Hammer.Straße'" = "'%07030%'",
+  						 #	"07080", # Hammer Straße / Kreuzung Geiststraße; TODO Fahrspurfilterung)
   						 "'Promenade'" = "'%04051%'",
   						 "'Gartenstraße'" = "'%04073%'",
-  						 "'Warendorfer.Straße'" = "'%04061%'",
+  						 "'Warendorfer.Straße'" = "'%04061%'", # TODO Fahrspurfilterung
   						 "'Hafenstraße'" = "'%04010%'",
-  						 "'Weseler.Straße'" = "'%01190%'",
-  						 "'Hansaring'" = "'%03290%'",
-  						 # Roxel
-  						 "'roxel1'" = "'%24020%'", 
-  						 "'roxel2'" = "'%24100%'", 
-  						 "'roxel3'" = "'%24140%'", 
-  						 "'roxel4'" = "'%24010%'", 
-  						 "'roxel5'" = "'%24120%'", 
-  						 "'roxel6'" = "'%24130%'", 
-  						 "'roxel7'" = "'%24030%'"
+  						 "'Weseler.Straße'" = "'%01190%'", # TODO Fahrspurfilterung
+  						 "'Hansaring'" = "'%03290%'"  # TODO Fahrspurfilterung
   						 )
 
     	date_filter <- 
@@ -238,7 +226,7 @@ shinyServer(function(input, output, session) {
     
 		sql_string <- paste0("SELECT date, hour, count, location, vehicle", 
       " FROM ", sql_table, date_filter,
-			" AND location LIKE ", sql_location)
+			" AND location LIKE ", sql_location) # TODO for mulitple car locations:, " OR location LIKE '%04051%'")
 		if (input$vehicle == "both") {
 	  	# add bikes
 			sql_table = "bikes"
@@ -263,6 +251,7 @@ shinyServer(function(input, output, session) {
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
+		
 		return(vehicles)
 	})  # end reactive
 
@@ -271,7 +260,7 @@ shinyServer(function(input, output, session) {
   })
   
   # observe all filters and toggle the global variable to color the refresh button
-  observeEvent(c(input$vehicle, input$location, input$hour_range,
+  observeEvent(c(input$vehicle, input$location, input$hour_range, input$tabs_time,
                  input$date_range, input$weekdays, input$months, input$years), {
                    global_vars$filter_changed <- TRUE
                  })
@@ -436,6 +425,7 @@ shinyServer(function(input, output, session) {
           radialaxis = list(
             visible = T,
             angle = 90,
+            tickangle = 90,
             range = c(0, max(bikes$count_month, cars$count_month))
           ),
           angularaxis = list(
@@ -493,6 +483,7 @@ shinyServer(function(input, output, session) {
           radialaxis = list(
             visible = T,
             angle = 90,
+            tickangle = 90,
             range = c(0, max(bikes$count_hour, cars$count_hour))
           ),
           angularaxis = list(

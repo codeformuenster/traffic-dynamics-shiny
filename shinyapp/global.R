@@ -3,7 +3,7 @@ vehicleChoices <-
 		"Kfz" = "cars", 
 		"Fahrräder & Kfz" = "both")
 
-startVehicle <- "bikes"
+startVehicle <- "both"
 
 locationChoices <-
 	c("Neutor" = "'Neutor'", 
@@ -16,16 +16,8 @@ locationChoices <-
 		"Hafenstraße" = "'Hafenstraße'",
 		"Weseler Straße / Kolde-Ring" = "'Weseler.Straße'",
 		"Hansaring / Albersloher Weg" = "'Hansaring'")
-		# "roxel1" = "'roxel1'", 
-		# "roxel2" = "'roxel2'", 
-		# "roxel3" = "'roxel3'", 
-		# "roxel4" = "'roxel4'", 
-		# "roxel5" = "'roxel5'", 
-		# "roxel6" = "'roxel6'", 
-		# "roxel7" = "'roxel7'"
-		# )
 
-startLocation <- "'Neutor'"
+startLocation <- "'Wolbecker.Straße'"
 
 monthChoices <-
 	 c("Januar" = 1, "Februar" = 2,

@@ -47,7 +47,12 @@ shinyUI(
 								max = 24,
 								value = c(0, 24)
 							),
-							uiOutput("button") # refresh button, see renderUI in server.R
+							fluidRow(
+							  column(12,
+							         align = "center",
+							         uiOutput("button") # refresh button, see renderUI in server.R
+							  )
+							)
 						),  # end wellPanel vehicle / location choice
 						tabsetPanel(
 							id = "tabs_time",
@@ -114,8 +119,7 @@ shinyUI(
   				h4("Summe pro Tag:"),
   				withSpinner(plotlyOutput("plotYear")),
   				h4("Summe pro Monat:"),
-  				withSpinner(plotlyOutput("plotRadarYear")),
-  				p("Jahres-Netzdiagramm wenig sinnvoll, wenn Daten nicht ganze Jahre umfassen.")
+  				withSpinner(plotlyOutput("plotRadarYear"))
     		),
   			column(
   				5,
