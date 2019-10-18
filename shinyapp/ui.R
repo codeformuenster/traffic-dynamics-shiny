@@ -120,7 +120,7 @@ shinyUI(
   				withSpinner(plotlyOutput("plotYear")),
   				h4("Summe pro Monat:"),
   				withSpinner(plotlyOutput("plotRadarYear")),
-  				p("Jahres-Netzdiagramm wenig sinnvoll, wenn Daten nicht ganze Jahre umfassen")
+  				p("Jahres-Netzdiagramm wenig sinnvoll, wenn Daten nicht ganze Jahre umfassen.")
     		),
   			column(
   				5,

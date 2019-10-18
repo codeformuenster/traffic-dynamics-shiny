@@ -4,7 +4,6 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 # TODO for next release
-# - fix month for radar plot
 # - link to codeformuenster impressum
 # - add proper fathom tracking
 # - color the update button, see crashes code
@@ -307,6 +306,7 @@ shinyServer(function(input, output, session) {
   	           showlegend = TRUE
   	    )
   	}
+  	
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
@@ -340,12 +340,10 @@ shinyServer(function(input, output, session) {
  		start <- Sys.time()
  		vehicles_radar_year <-
  		  dbData$d_hour %>%
- 			group_by(month(date), vehicle) %>%
+ 		  mutate(month_character = month(date, label = TRUE, abbr = TRUE, locale = "de_DE.UTF-8")) %>% 
+ 			group_by(month_character, vehicle) %>%
  			summarise(count_month = sum(count, na.rm = TRUE)) %>%
- 		  mutate(month_character = "TODO") %>% 
  		  ungroup()
- 		
- 		# print(month(vehicles_radar_year$date, label = TRUE, abbr = TRUE, locale = "de_DE"))
  		
 	  cat(paste("aggregated_data_radar_year() took", Sys.time() - start, "seconds\n"))
 
@@ -376,42 +374,42 @@ shinyServer(function(input, output, session) {
     
     if (nrow(bikes) == 0) {
       bikes <- data.frame(count_month = rep(NA, 12),
-                          month_character = c('Dez', 'Nov', 'Okt', 'Sep', 'Aug', 'Jul',
-                                    'Jun', 'Mai', 'Apr', 'Mrz', 'Feb', 'Jan'),
-                         vehicle = rep("Fahrrad", 12))
+                          month_character = c('Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                                              'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
+                          vehicle = rep("Fahrrad", 12))
     }
 
     if (nrow(cars) == 0) {
       cars <- data.frame(count_month = rep(NA, 12),
-                         month_character = c('Dez', 'Nov', 'Okt', 'Sep', 'Aug', 'Jul',
-                                   'Jun', 'Mai', 'Apr', 'Mrz', 'Feb', 'Jan'),
+                         month_character = c('Jan', 'Feb', 'Mär', 'Apr', 'Mai', 'Jun',
+                                             'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez'),
                          vehicle = rep("Kfz", 12))
     }
 
-    print(bikes)
-    
     p <- plot_ly(
-      type = 'scatterpolar',
+      type = 'scatterpolargl',
       mode = 'markers',
       fill = 'toself'
     ) %>% 
       add_trace(data = bikes,
         r = ~count_month,
-        theta = ~month_character,#c('Dez', 'Nov', 'Okt', 'Sep', 'Aug', 'Jul',
-                  #'Jun', 'Mai', 'Apr', 'Mrz', 'Feb', 'Jan'),
+        theta = ~month_character,
         name = ~vehicle,
         color = ~vehicle) %>%
       add_trace(data = cars,
         r = ~count_month,
-        theta = ~month_character,#,c('Dez', 'Nov', 'Okt', 'Sep', 'Aug', 'Jul',
-                 #'Jun', 'Mai', 'Apr', 'Mrz', 'Feb', 'Jan'),
+        theta = ~month_character,
         name = ~vehicle,
         color = ~vehicle) %>%
       layout(
       polar = list(
         radialaxis = list(
           visible = T,
+          angle = 90,
           range = c(0, max(bikes$count_month, cars$count_month))
+        ),
+        angularaxis = list(
+          direction = 'clockwise'
         )
       )
     )
@@ -429,23 +427,25 @@ shinyServer(function(input, output, session) {
 
      if (nrow(bikes) == 0) {
       bikes <- data.frame(count_hour = rep(NA, 24),
-                         hour_character = c('23h', '22h', '21h', '20h', '19h', '18h', '17h', '16h',
-                                  '15h', '14h', '13h', '12h', '11h', '10h', '9h',
-                                  '8h', '7h', '6h', '5h', '4h', '3h', '2h', '1h', '0h'),
+                         hour_character = c('0h', '1h', '2h', '3h', '4h', '5h', '6h', '7h',
+                                            '8h', '9h', '10h', '11h', '12h', '13h', '14h', '15h',
+                                            '16h', '17h', '18h', '19h', '20h', '21h', '22h', '23h'),
                          vehicle = rep("Fahrrad", 24))
     }
 
     if (nrow(cars) == 0) {
       cars <- data.frame(count_hour = rep(NA, 24),
-                         hour_character = c('23h', '22h', '21h', '20h', '19h', '18h', '17h', '16h',
-                                 '15h', '14h', '13h', '12h', '11h', '10h', '9h',
-                                 '8h', '7h', '6h', '5h', '4h', '3h', '2h', '1h', '0h'),
+                         hour_character = c('0h', '1h', '2h', '3h', '4h', '5h', '6h', '7h',
+                                            '8h', '9h', '10h', '11h', '12h', '13h', '14h', '15h',
+                                            '16h', '17h', '18h', '19h', '20h', '21h', '22h', '23h'),
                          vehicle = rep("Kfz", 24))
     }
-        p <- plot_ly(
-      type = 'scatterpolar',
+        
+    p <- plot_ly(
+      type = 'scatterpolargl',
       mode = 'markers', 
-      fill = 'toself'
+      fill = 'toself',
+      direction = 'clockwise'
     ) %>% 
       add_trace(data = bikes,
                 r = ~count_hour,
@@ -461,9 +461,13 @@ shinyServer(function(input, output, session) {
       polar = list(
         radialaxis = list(
           visible = T,
+          angle = 90,
           range = c(0, max(bikes$count_hour, cars$count_hour))
+        ),
+        angularaxis = list(
+          direction = 'clockwise'
         )
-      )
+        )
       )
     
     return(p)
