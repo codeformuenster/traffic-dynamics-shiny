@@ -304,7 +304,8 @@ shinyServer(function(input, output, session) {
   	           yaxis = list(title = "Anzahl"),
   	           legend = list(x = 0.1, y = 0.9),
   	           showlegend = TRUE
-  	    )
+  	    ) %>% 
+  	    config(plot_ly(), displayModeBar = T, collaborate = F, displaylogo = F,locale = 'de')
   	}
   	
   	cat(paste("renderYearPlot() took", Sys.time() - start, "seconds\n"))
@@ -329,8 +330,10 @@ shinyServer(function(input, output, session) {
   	      yaxis = list(title = "Anzahl"),
   	      legend = list(x = 0.1, y = 0.9),
   	      showlegend = TRUE
-  	      )
+  	    ) %>% 
+  	    config(plot_ly(), displayModeBar = T, collaborate = F, displaylogo = F,locale = 'de')
   	}
+  	
   	cat(paste("renderDayPlot() took", Sys.time() - start, "seconds\n"))
   	return(p)
   })
@@ -402,17 +405,18 @@ shinyServer(function(input, output, session) {
         name = ~vehicle,
         color = ~vehicle) %>%
       layout(
-      polar = list(
-        radialaxis = list(
-          visible = T,
-          angle = 90,
-          range = c(0, max(bikes$count_month, cars$count_month))
-        ),
-        angularaxis = list(
-          direction = 'clockwise'
+        polar = list(
+          radialaxis = list(
+            visible = T,
+            angle = 90,
+            range = c(0, max(bikes$count_month, cars$count_month))
+          ),
+          angularaxis = list(
+            direction = 'clockwise'
+          )
         )
-      )
-    )
+      ) %>% 
+      config(plot_ly(), displayModeBar = T, collaborate = F, displaylogo = F,locale = 'de')
     
     return(p)
   })
@@ -457,18 +461,19 @@ shinyServer(function(input, output, session) {
                 theta =  ~hour_character,
                 name = ~vehicle,
                 color = ~vehicle) %>%
-    layout(
-      polar = list(
-        radialaxis = list(
-          visible = T,
-          angle = 90,
-          range = c(0, max(bikes$count_hour, cars$count_hour))
-        ),
-        angularaxis = list(
-          direction = 'clockwise'
+      layout(
+        polar = list(
+          radialaxis = list(
+            visible = T,
+            angle = 90,
+            range = c(0, max(bikes$count_hour, cars$count_hour))
+          ),
+          angularaxis = list(
+            direction = 'clockwise'
+          )
         )
-        )
-      )
+      ) %>% 
+      config(plot_ly(), displayModeBar = T, collaborate = F, displaylogo = F,locale = 'de')
     
     return(p)
   })
