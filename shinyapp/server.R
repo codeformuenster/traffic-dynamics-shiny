@@ -54,8 +54,7 @@ shinyServer(function(input, output, session) {
 	  if (input$tabs_data_models == "data") {
   	  paste0(names(locationChoices[locationChoices == input$location]),
   	         ": Anzahl ",
-  	         names(vehicleChoices[vehicleChoices == input$vehicle]),
-  	         " (nicht angezeigte Daten existieren leider (noch) nicht; keine Gewähr für Vollständigkeit oder Korrektheit der Daten)")
+  	         names(vehicleChoices[vehicleChoices == input$vehicle]))
 	  } else {
 	    paste0(names(locationChoices[locationChoices == input$location]),
 	           ", Fahrräder, Werktage 2017, 7:00–8:59 Uhr, Modellschätzungen")

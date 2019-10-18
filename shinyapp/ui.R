@@ -150,25 +150,29 @@ shinyUI(
 		         )
 		  ),
 		fluidRow(
+		  h3("Hinweise zu den Daten"),
+		  p("Kfz werden an vielen Ampeln im Stadtgebiet gezählt. Wenn Du die Daten für eine bestimmte Ampelkreuzung hier visualisiert sehen möchtest,
+		    dann", a("melde Dich gerne!", href = "mailto:muenster@codefor.de"), " Da die Zählstellen für Fahrräder nicht an Ampeln liegen (wo die Kfz gezählt werden), ist die
+		    Vergleichbarkeit zwischen Fahrrad und Kfz bei den oben gleichzeitig gezeigten Daten für einen Ort mit Vorsicht zu genießen. Insbesondere werden für Kfz momentan noch
+		    alle Richtungen einer Kreuzung visualisiert, selbst wenn das Verkehrsströme abbildet, die gar nicht in die Radverkehrszählung einfließen.
+		    Nicht angezeigte Daten fehlen vermutlich in der Datenquelle. Keine Gewähr für Vollständigkeit oder Korrektheit der Daten! "),
+		  p(a("Hier gibt es die genaue Lage der Fahrrad-Zählstellen und weitere Infos zu den Daten.",
+		    href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html")),
+		  p("Datenquelle: Stadt Münster (Daten bis 2017 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0; Daten ab 2017 unter keiner genauer spezifizierten Lizenz; Fahrraddaten ab 2019 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0)"),
 		  h3("Über diese Seite"),
-			print("Ein Projekt von "),
-			a(img(src = "cfm_logo.png", alt = "Code for Münster."), href = "http://codeformuenster.org"),
-			print("in Zusammenarbeit mit der "),
-			a("IG Fahrradstadt Münster.", href = "https://fahrradstadt.ms"),
-			HTML("<br>"),
-			print("Lizenziert unter der GPLv3"),
-			a("(mehr Infos zur Lizenz hier).",
-				href = "https://github.com/codeformuenster/traffic-dynamics-shiny#rechtliches"),
-			HTML("<br>"),
-			a("Ideen und Feedback willkommen!",
-				href = "https://github.com/codeformuenster/traffic-dynamics-shiny/issues"),
-			HTML("<br>"),
-			print("Datenquelle: Stadt Münster (Daten bis 2017 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0; Daten ab 2017 unter keiner genauer spezifizierten Lizenz; Fahrraddaten ab 2019 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0)"),
-			HTML("<br>"),
-			a("Hier gibt es die genaue Lage der Fahrrad-Zählstellen und weitere Infos zu den Daten.",
-				href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html"),
-		  HTML("<br>"),
-  		a("Impressum & Datenschutzerklärung", href = "https://codeformuenster.org/impressum/")
+			p("Ein Projekt von ",
+			  a(img(src = "cfm_logo.png", alt = "Code for Münster."), href = "http://codeformuenster.org"),
+			  "in Zusammenarbeit mit der ",
+			  a("IG Fahrradstadt Münster.", href = "https://fahrradstadt.ms")
+			  ),
+			p("Ideen und Feedback willkommen!",
+			  a(href = "https://github.com/codeformuenster/traffic-dynamics-shiny/issues", target = "_blank", "Zum Beispiel auf github"),
+			  " oder ", a(href = "mailto:muenster@codefor.de", target = "_blank", "per e-Mail.")),
+			p("Lizenziert unter der GPLv3",
+			  a("(mehr Infos zur Lizenz hier).",
+			  href = "https://github.com/codeformuenster/traffic-dynamics-shiny#rechtliches")
+			  ),
+			a("Impressum & Datenschutzerklärung", href = "https://codeformuenster.org/impressum/")
     ), # end footer fluid row
 		
 		tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
