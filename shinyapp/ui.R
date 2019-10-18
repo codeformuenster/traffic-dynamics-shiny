@@ -153,7 +153,7 @@ shinyUI(
 		fluidRow(
 		  h3("Über diese Seite"),
 			print("Ein Projekt von "),
-			a("Code for Münster", href = "http://codeformuenster.org"),
+			a(img(src = "cfm_logo.png", alt = "Code for Münster."), href = "http://codeformuenster.org"),
 			print("in Zusammenarbeit mit der "),
 			a("IG Fahrradstadt Münster.", href = "https://fahrradstadt.ms"),
 			HTML("<br>"),
@@ -170,7 +170,28 @@ shinyUI(
 				href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html"),
 		  HTML("<br>"),
   		a("Impressum & Datenschutzerklärung", href = "https://codeformuenster.org/impressum/")
-    ) # end footer fluid row
-  , includeScript("fathom.js")
+    ), # end footer fluid row
+		
+		tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
+		
+		tags$script(src = "https://assets.digitalclimatestrike.net/widget.js", async = NA),
+		
+		tags$script(
+		  HTML(
+		    paste0("(function(f, a, t, h, o, m){",
+		                        "a[h]=a[h]||function(){",
+		                        "(a[h].q=a[h].q||[]).push(arguments)",
+		                        "};",
+		                        "o=f.createElement('script'),",
+		                        "m=f.getElementsByTagName('script')[0];",
+		                        "o.async=1; o.src=t; o.id='fathom-script';",
+		                        "m.parentNode.insertBefore(o,m)",
+		                        "})(document, window, '//fathom.codeformuenster.org/tracker.js', 'fathom');",
+		                        "fathom('set', 'siteId', '", Sys.getenv("FATHOM_SITEID"), "');",
+		                        "fathom('trackPageview');"
+		    )
+		  )
+		) # end fathom script
+		
   ) # end fluidPage
 ) # end shinyUI
