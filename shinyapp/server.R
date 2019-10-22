@@ -119,6 +119,8 @@ shinyServer(function(input, output, session) {
     	start <- Sys.time()
     	
     	req(con)
+    	dbData$d_hour <- NULL
+    	dbData$d_year <- NULL
     	
   		sql_table_bikes <- "bikes"
   		sql_table_cars <- "cars"
@@ -275,10 +277,10 @@ shinyServer(function(input, output, session) {
 
  	output$plotYear <- renderPlotly({
  	  
- 	  req(dbData$d_hour)
+ 	  req(dbData$d_year)
  	  
   	start <- Sys.time()
-  	if (is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0) {
+  	if (is.null(dbData$d_year) || nrow(dbData$d_year) == 0) {
   	  p <- NullPlot
   	} else {
   	  p <- plot_ly(data = dbData$d_year,
