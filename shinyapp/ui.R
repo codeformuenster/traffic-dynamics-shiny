@@ -157,22 +157,22 @@ shinyUI(
 		    alle Richtungen einer Kreuzung visualisiert, selbst wenn das Verkehrsströme abbildet, die gar nicht in die Radverkehrszählung einfließen.
 		    Nicht angezeigte Daten fehlen vermutlich in der Datenquelle. Keine Gewähr für Vollständigkeit oder Korrektheit der Daten! "),
 		  p(a("Hier gibt es die genaue Lage der Fahrrad-Zählstellen und weitere Infos zu den Daten.",
-		    href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html")),
+		    href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html", target = "_blank")),
 		  p("Datenquelle: Stadt Münster (Daten bis 2017 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0; Daten ab 2017 unter keiner genauer spezifizierten Lizenz; Fahrraddaten ab 2019 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0)"),
 		  h3("Über diese Seite"),
 			p("Ein Projekt von ",
-			  a(img(src = "cfm_logo.png", alt = "Code for Münster."), href = "http://codeformuenster.org"),
+			  a(img(src = "cfm_logo.png", alt = "Code for Münster."), href = "http://codeformuenster.org", target = "_blank"),
 			  "in Zusammenarbeit mit der ",
-			  a("IG Fahrradstadt Münster.", href = "https://fahrradstadt.ms")
+			  a("IG Fahrradstadt Münster.", href = "https://fahrradstadt.ms", target = "_blank")
 			  ),
 			p("Ideen und Feedback willkommen!",
 			  a(href = "https://github.com/codeformuenster/traffic-dynamics-shiny/issues", target = "_blank", "Zum Beispiel auf github"),
-			  " oder ", a(href = "mailto:muenster@codefor.de", target = "_blank", "per e-Mail.")),
+			  " oder ", a(href = "mailto:muenster@codefor.de", "per e-Mail.")),
 			p("Lizenziert unter der GPLv3",
 			  a("(mehr Infos zur Lizenz hier).",
-			  href = "https://github.com/codeformuenster/traffic-dynamics-shiny#rechtliches")
+			  href = "https://github.com/codeformuenster/traffic-dynamics-shiny#rechtliches", target = "_blank")
 			  ),
-			a("Impressum & Datenschutzerklärung", href = "https://codeformuenster.org/impressum/")
+			a("Impressum & Datenschutzerklärung", href = "https://codeformuenster.org/impressum/", target = "_blank")
     ), # end footer fluid row
 		
 		tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
