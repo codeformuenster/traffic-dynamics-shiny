@@ -151,13 +151,16 @@ shinyUI(
 		  ),
 		fluidRow(
 		  h3("Hinweise zu den Daten"),
-		  p("Kfz werden an vielen Ampeln im Stadtgebiet gezählt. Wenn Du die Daten für eine bestimmte Ampelkreuzung hier visualisiert sehen möchtest,
-		    dann", a("melde Dich gerne!", href = "mailto:muenster@codefor.de"), " Da die Zählstellen für Fahrräder nicht an Ampeln liegen (wo die Kfz gezählt werden), ist die
-		    Vergleichbarkeit zwischen Fahrrad und Kfz bei den oben gleichzeitig gezeigten Daten für einen Ort mit Vorsicht zu genießen. Insbesondere werden für Kfz momentan noch
-		    alle Richtungen einer Kreuzung visualisiert, selbst wenn das Verkehrsströme abbildet, die gar nicht in die Radverkehrszählung einfließen.
-		    Nicht angezeigte Daten fehlen vermutlich in der Datenquelle. Keine Gewähr für Vollständigkeit oder Korrektheit der Daten! "),
-		  p(a("Hier gibt es die genaue Lage der Fahrrad-Zählstellen und weitere Infos zu den Daten.",
-		    href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html", target = "_blank")),
+		  p("Kfz werden an vielen Ampeln im Stadtgebiet gezählt. Wenn Du die Daten für eine bestimmte Ampelkreuzung hier",
+		    " visualisiert sehen möchtest, dann", a("melde Dich gerne!", href = "mailto:muenster@codefor.de"),
+		    " Da die Zählstellen für Fahrräder nicht an Ampeln liegen (wo die Kfz gezählt werden), ist die ",
+		    " Vergleichbarkeit zwischen Fahrrad und Kfz bei den oben gleichzeitig gezeigten Daten für einen Ort mit Vorsicht zu genießen.",
+		    " Ausgewählte Ampelkreuzungen für Kfz (jeweils nur die Fahrtrichtung, die auch die Radzählstelle misst): ",
+		    " Neutor / Wilhelmstraße; Wolbecker Str. / Dortmunder Str.; Hüfferstr. / Badstr.; Hammer Str. / Geiststr.; Eisenbahnstr. Höhe ]pg[;
+		    Gartenstr. / Bohlweg; Warendorfer Str. / Piusallee; Hafenstr. / Von-Steuben-Str. (alle Fahrspuren); Weseler Str. / Koldering; Hansaring / Albersloher Weg (alle Fahrspuren)",
+		    p(a("Hier gibt es die genaue Lage der Fahrrad-Zählstellen und weitere Infos zu den Daten.",
+		        href = "http://www.stadt-muenster.de/verkehrsplanung/verkehr-in-zahlen.html", target = "_blank")),
+		    "Nicht angezeigte Daten fehlen vermutlich in der Datenquelle. <b>Keine Gewähr für Vollständigkeit oder Korrektheit der Daten!</b>"),
 		  p("Datenquelle: Stadt Münster (Daten bis 2017 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0; Daten ab 2017 unter keiner genauer spezifizierten Lizenz; Fahrraddaten ab 2019 lizenziert unter Datenlizenz Deutschland - Namensnennung - Version 2.0)"),
 		  h3("Über diese Seite"),
 			p("Ein Projekt von ",

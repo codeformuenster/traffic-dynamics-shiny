@@ -67,76 +67,52 @@ shinyServer(function(input, output, session) {
 	
   observe({
 		# only show filtering options (i.e., time range) relevant for the current data
+    start <- Sys.time()
     
   	req(con)
-    
-  	# TODO move the following switch to global.R to have the code only once
-		sql_location_cars <-
-				switch(input$location,
-						 "'Neutor'" = "'%01080%'",
-						 "'Wolbecker.Straße'" = "'%04050%'",
-						 "'Hüfferstraße'" = "'%03052%'",
-						 "'Hammer.Straße'" = "'%07030%'",
-						 "'Promenade'" = "'%04051%'",
-						 "'Gartenstraße'" = "'%04073%'",
-						 "'Warendorfer.Straße'" = "'%04061%'",
-						 "'Hafenstraße'" = "'%04010%'",
-						 "'Weseler.Straße'" = "'%01190%'", # TODO add only proper directions for Kfz Kolde-Ring (i.e., only Weseler Str.)
-						 "'Hansaring'" = "'%03290%'"
-						 )
-		
+
 		dates_in_car_data <- data.frame(date = NA_character_)
 		dates_in_bike_data <- data.frame(date = NA_character_)
 		
 		if (input$vehicle == "bikes" | input$vehicle == "both") {
 		  dates_in_bike_data <-
 		    dbGetQuery(conn = con,
-		               paste0("SELECT DISTINCT date AS date FROM bikes WHERE location LIKE ",
+		               paste0("SELECT date FROM bikes WHERE location LIKE ",
 		                      input$location, " AND count != ''"))
 		}
 		
 		if (input$vehicle == "cars" | input$vehicle == "both") {
 		  dates_in_car_data <-
 		    dbGetQuery(conn = con,
-		               paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ",
-		                      sql_location_cars, " AND count != ''"))
+		               paste0("SELECT date FROM cars WHERE location LIKE ",
+		                      sql_location_cars(input$location)[1], " ESCAPE '/' AND count != ''"))
+		  # this is only considering the first "fahrspur" from the car data, even if several fahrspuren are defined
+		  # should be okay, as the following only looks for available data: years and min/max date
 		}
 		
 		years_in_data <-
-		  sort(unique(c(as.character(year(dates_in_bike_data$date)),
-		                as.character(year(dates_in_car_data$date)))))
-		months_in_data <-
-		  sort(unique(c(as.numeric(month(dates_in_bike_data$date)),
-		                as.numeric(month(dates_in_car_data$date)))))
-		
-		# wday() - 1  to get Sunday == 0 and Monday == 1
-		wdays_in_data <-
-		  sort(unique(c(as.numeric(wday(dates_in_bike_data$date) - 1),
-		                as.numeric(wday(dates_in_car_data$date) - 1))))
+		  unique(c((year(dates_in_bike_data$date)),
+		           (year(dates_in_car_data$date))))
 		
 		updateSelectizeInput(session = session,
 		                     inputId = "years",
-												 selected = isolate(input$years),
-			                   choices = years_in_data)
+		                     selected = isolate(input$years),
+		                     choices = years_in_data)
 		
-		updateSelectizeInput(session = session,
-			                   inputId = "months",
-				 		             selected = isolate(input$months),
-			                   choices = monthChoices[monthChoices %in% months_in_data])
-		
-		updateSelectizeInput(session = session,
-			                   inputId = "weekdays",
-				 		             selected = isolate(input$weekdays),
-			                   choices = weekdayChoices[weekdayChoices %in% wdays_in_data])
+		first_date <- min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE)
+		last_date <- max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE)
 		
 		updateDateRangeInput(session = session,
-				 		inputId = "date_range",
-				 		min = min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
-				 		max = max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
-				 		start = min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
-				 		end = max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE)
+		                     inputId = "date_range",
+		                     min = first_date,
+              				 	 max = last_date,
+              				 	 start = first_date,
+              				   end = last_date
 		)
 		
+		cat(paste("\nupdating time filters took ",
+		          Sys.time() - start,
+		          "seconds\n"))
 	})
 
   load_filtered_data_from_db <- eventReactive(global_vars$update_visible_data, ignoreInit = TRUE, {
@@ -148,20 +124,6 @@ shinyServer(function(input, output, session) {
   		sql_table_cars <- "cars"
   		
   		sql_location_bikes <- input$location
-  		sql_location_cars <- 
-  			switch(input$location,
-  						 "'Neutor'" = "'%01080%'", 
-  						 "'Wolbecker.Straße'" = "'%04050%'",
-  						 "'Hüfferstraße'" = "'%03052%'",
-  						 "'Hammer.Straße'" = "'%07030%'",
-  						 #	"07080", # Hammer Straße / Kreuzung Geiststraße; TODO Fahrspurfilterung)
-  						 "'Promenade'" = "'%04051%'",
-  						 "'Gartenstraße'" = "'%04073%'",
-  						 "'Warendorfer.Straße'" = "'%04061%'", # TODO Fahrspurfilterung
-  						 "'Hafenstraße'" = "'%04010%'",
-  						 "'Weseler.Straße'" = "'%01190%'", # TODO Fahrspurfilterung
-  						 "'Hansaring'" = "'%03290%'"  # TODO Fahrspurfilterung
-  						 )
 
     	date_filter <- 
   			paste0(" WHERE hour >= ", input$hour_range[1],
@@ -218,7 +180,7 @@ shinyServer(function(input, output, session) {
   	
     # default: cars
     sql_table <- sql_table_cars
-    sql_location <- sql_location_cars
+    sql_location <- sql_location_cars(input$location)
     
     if (input$vehicle == "bikes") {
     	sql_table <- sql_table_bikes
@@ -226,8 +188,18 @@ shinyServer(function(input, output, session) {
     }
     
 		sql_string <- paste0("SELECT date, hour, count, location, vehicle", 
-      " FROM ", sql_table, date_filter,
-			" AND location LIKE ", sql_location) # TODO for mulitple car locations:, " OR location LIKE '%04051%'")
+      " FROM ", sql_table, date_filter, " AND (")
+		
+		sql_location_string <- ""
+		for (lidx in 1:length(sql_location)) {
+		  sql_location_string <- paste0(sql_location_string, "location LIKE ", sql_location[lidx], " ESCAPE '/'")
+		  if (lidx < length(sql_location)) {
+		    sql_location_string <- paste0(sql_location_string, " OR ")
+		  }
+		}
+		
+		sql_string <- paste0(sql_string, sql_location_string, ")")
+  
 		if (input$vehicle == "both") {
 	  	# add bikes
 			sql_table = "bikes"
@@ -252,7 +224,7 @@ shinyServer(function(input, output, session) {
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
-
+		
 		return(vehicles)
 	})  # end reactive
 
