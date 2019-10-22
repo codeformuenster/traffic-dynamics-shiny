@@ -67,13 +67,13 @@ shinyServer(function(input, output, session) {
 	
   observe({
 		# only show filtering options (i.e., time range) relevant for the current data
-  	
+    
   	req(con)
-		
+    
   	# TODO move the following switch to global.R to have the code only once
-		sql_location_cars <- 
-				switch(input$location, 
-						 "'Neutor'" = "'%01080%'", 
+		sql_location_cars <-
+				switch(input$location,
+						 "'Neutor'" = "'%01080%'",
 						 "'Wolbecker.Straße'" = "'%04050%'",
 						 "'Hüfferstraße'" = "'%03052%'",
 						 "'Hammer.Straße'" = "'%07030%'",
@@ -84,59 +84,61 @@ shinyServer(function(input, output, session) {
 						 "'Weseler.Straße'" = "'%01190%'", # TODO add only proper directions for Kfz Kolde-Ring (i.e., only Weseler Str.)
 						 "'Hansaring'" = "'%03290%'"
 						 )
-	
-			dates_in_car_data <- data.frame(date = NA_character_)
-			dates_in_bike_data <- data.frame(date = NA_character_)
-			
-			if (input$vehicle == "bikes" | input$vehicle == "both") {
-				dates_in_bike_data <-
-					dbGetQuery(conn = con, 
-										 paste0("SELECT DISTINCT date AS date FROM bikes WHERE location LIKE ", 
-										 			 input$location, " AND count != ''"))
-			}
-			if (input$vehicle == "cars" | input$vehicle == "both") {
-				dates_in_car_data <-
-					dbGetQuery(conn = con, 
-										 paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ", 
-										 			 sql_location_cars, " AND count != ''"))
-			}
-			
-			years_in_data <- 
-				sort(unique(c(as.character(year(dates_in_bike_data$date)), 
-											as.character(year(dates_in_car_data$date)))))
-			months_in_data <-
-				sort(unique(c(as.numeric(month(dates_in_bike_data$date)), 
-											as.numeric(month(dates_in_car_data$date)))))
-			
-			# wday() - 1  to get Sunday == 0 and Monday == 1
-			wdays_in_data <-
-				sort(unique(c(as.numeric(wday(dates_in_bike_data$date) - 1),
-											as.numeric(wday(dates_in_car_data$date) - 1))))
-			
-			updateSelectizeInput(session = session,
-			                   inputId = "years",
+		
+		dates_in_car_data <- data.frame(date = NA_character_)
+		dates_in_bike_data <- data.frame(date = NA_character_)
+		
+		if (input$vehicle == "bikes" | input$vehicle == "both") {
+		  dates_in_bike_data <-
+		    dbGetQuery(conn = con,
+		               paste0("SELECT DISTINCT date AS date FROM bikes WHERE location LIKE ",
+		                      input$location, " AND count != ''"))
+		}
+		
+		if (input$vehicle == "cars" | input$vehicle == "both") {
+		  dates_in_car_data <-
+		    dbGetQuery(conn = con,
+		               paste0("SELECT DISTINCT date AS date FROM cars WHERE location LIKE ",
+		                      sql_location_cars, " AND count != ''"))
+		}
+		
+		years_in_data <-
+		  sort(unique(c(as.character(year(dates_in_bike_data$date)),
+		                as.character(year(dates_in_car_data$date)))))
+		months_in_data <-
+		  sort(unique(c(as.numeric(month(dates_in_bike_data$date)),
+		                as.numeric(month(dates_in_car_data$date)))))
+		
+		# wday() - 1  to get Sunday == 0 and Monday == 1
+		wdays_in_data <-
+		  sort(unique(c(as.numeric(wday(dates_in_bike_data$date) - 1),
+		                as.numeric(wday(dates_in_car_data$date) - 1))))
+		
+		updateSelectizeInput(session = session,
+		                     inputId = "years",
 												 selected = isolate(input$years),
 			                   choices = years_in_data)
-			
-			updateSelectizeInput(session = session,
+		
+		updateSelectizeInput(session = session,
 			                   inputId = "months",
 				 		             selected = isolate(input$months),
 			                   choices = monthChoices[monthChoices %in% months_in_data])
-			
-			updateSelectizeInput(session = session,
+		
+		updateSelectizeInput(session = session,
 			                   inputId = "weekdays",
 				 		             selected = isolate(input$weekdays),
 			                   choices = weekdayChoices[weekdayChoices %in% wdays_in_data])
-			
-			updateDateRangeInput(session = session,
+		
+		updateDateRangeInput(session = session,
 				 		inputId = "date_range",
 				 		min = min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
 				 		max = max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
 				 		start = min(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE),
 				 		end = max(c(dates_in_car_data$date, dates_in_bike_data$date), na.rm  = TRUE)
-				 	)
+		)
+		
 	})
-	
+
   load_filtered_data_from_db <- eventReactive(global_vars$update_visible_data, ignoreInit = TRUE, {
     	start <- Sys.time()
     	
@@ -300,6 +302,9 @@ shinyServer(function(input, output, session) {
  	})
 
  	output$plotYear <- renderPlotly({
+ 	  
+ 	  req(dbData$d_hour)
+ 	  
   	start <- Sys.time()
   	if (is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0) {
   	  p <- NullPlot
@@ -328,6 +333,9 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotDay <- renderPlotly({
+    
+    req(dbData$d_hour)
+    
   	start <- Sys.time()
   	if (is.null(dbData$d_hour) || nrow(dbData$d_hour) == 0) {
   	  p <- NullPlot
@@ -554,7 +562,7 @@ shinyServer(function(input, output, session) {
     )
   
   output$plotTemperature <- renderPlotly({
-    if(input$select_model == "simple"){
+    if (input$select_model == "simple") {
       model <- neutor_werktage_2017_bikes_simple
     } else {
       # model <- neutor_werktage_2017_bikes_complex
@@ -577,7 +585,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotWind <- renderPlotly({
-    if(input$select_model == "simple"){
+    if (input$select_model == "simple") {
       model <- neutor_werktage_2017_bikes_simple
     } else {
       # model <- neutor_werktage_2017_bikes_complex
@@ -600,7 +608,7 @@ shinyServer(function(input, output, session) {
   })
   
   output$plotRain <- renderPlotly({
-    if(input$select_model == "simple"){
+    if (input$select_model == "simple") {
       model <- neutor_werktage_2017_bikes_simple
     } else {
       # model <- neutor_werktage_2017_bikes_complex
