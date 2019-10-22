@@ -250,7 +250,7 @@ shinyServer(function(input, output, session) {
 		cat(paste("\nload_filtered_data_from_db() took",
 		          Sys.time() - start,
 		          "seconds\n"))
-		
+
 		return(vehicles)
 	})  # end reactive
 
@@ -571,7 +571,9 @@ shinyServer(function(input, output, session) {
       ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
-    ggplotly(p)
+    dev.off()
+    
+    return(ggplotly(p))
   })
   
   output$plotWind <- renderPlotly({
@@ -592,7 +594,9 @@ shinyServer(function(input, output, session) {
       ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
-    ggplotly(p)
+    dev.off()
+    
+    return(ggplotly(p))
   })
   
   output$plotRain <- renderPlotly({
@@ -613,7 +617,9 @@ shinyServer(function(input, output, session) {
       ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
-    ggplotly(p)
+    dev.off()
+    
+    return(ggplotly(p))
   })
   
   output$plotMonth <- renderPlotly({
@@ -634,7 +640,9 @@ shinyServer(function(input, output, session) {
       ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
     
-    ggplotly(p)
+    dev.off()
+    
+    return(ggplotly(p))
   })
   
   output$plotWeekday <- renderPlotly({
@@ -654,8 +662,10 @@ shinyServer(function(input, output, session) {
       xlab("Wochentag") +
       ylab("Anzahl Fahrräder pro Stunde") +
       theme_minimal()
-
-    ggplotly(p)
+    
+    dev.off()
+    
+    return(ggplotly(p))
   })
   
   
