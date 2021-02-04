@@ -180,9 +180,7 @@ shinyUI(
     ), # end footer fluid row
 		
 		tags$head(tags$link(rel = "shortcut icon", href = "favicon.ico")),
-		
-		tags$script(src = "https://assets.digitalclimatestrike.net/widget.js", async = NA),
-		
+
 		tags$script(
 		  HTML(
 		    paste0("(function(f, a, t, h, o, m){",
